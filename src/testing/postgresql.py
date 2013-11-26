@@ -159,6 +159,7 @@ class Postgresql(object):
         else:
             logger.close()
 
+            self.pid = pid
             exec_at = datetime.now()
             while True:
                 if os.waitpid(pid, os.WNOHANG) != (0, 0):
@@ -171,8 +172,6 @@ class Postgresql(object):
                     raise RuntimeError("*** failed to launch postmaster (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
-
-            self.pid = pid
 
             # create test database
             with psycopg2.connect(**self.dsn(dbname='template1')) as conn:
