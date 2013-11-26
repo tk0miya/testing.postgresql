@@ -115,7 +115,7 @@ class Postgresql(object):
                 os.chmod(os.path.join(self.base_dir, 'data'), 0700)
             except Exception as exc:
                 raise RuntimeError("could not copytree %s to %s: %r" %
-                                   (self.copy_data_from, os.path.join(self.base_dir, 'data')))
+                                   (self.copy_data_from, os.path.join(self.base_dir, 'data'), exc))
 
         # (re)create directory structure
         for subdir in ['data', 'tmp']:
