@@ -112,7 +112,7 @@ class Postgresql(object):
         if self.copy_data_from:
             try:
                 copytree(self.copy_data_from, os.path.join(self.base_dir, 'data'))
-                os.chmod(os.path.join(self.base_dir, 'data'), 0700)
+                os.chmod(os.path.join(self.base_dir, 'data'), 0o700)
             except Exception as exc:
                 raise RuntimeError("could not copytree %s to %s: %r" %
                                    (self.copy_data_from, os.path.join(self.base_dir, 'data'), exc))
@@ -122,7 +122,7 @@ class Postgresql(object):
             try:
                 path = os.path.join(self.base_dir, subdir)
                 os.makedirs(path)
-                os.chmod(path, 0700)
+                os.chmod(path, 0o700)
             except:
                 pass
 
