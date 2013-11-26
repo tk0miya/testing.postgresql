@@ -1,0 +1,1 @@
+/usr/lib/postgresql/9.1/bin/postgres "-D" "/home/katsuwo/work/prog/testing.mysqld/foo/data" "-k" "/home/katsuwo/work/prog/testing.mysqld/foo/tmp"
