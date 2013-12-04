@@ -16,7 +16,7 @@ classifiers = [
 
 setup(
     name='testing.postgresql',
-    version='0.1.0',
+    version='1.0.0',
     description='automatically setups a postgresql instance in a temporary directory, and destroys it after testing',
     long_description=open('README.rst').read(),
     classifiers=classifiers,

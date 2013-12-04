@@ -70,6 +70,10 @@ Apache License 2.0
 History
 =======
 
-1.0.0 (2013-11-26)
+1.0.0 (2013-12-04)
+-------------------
+* Add @skipIfNotFound decorator
+
+0.1.0 (2013-11-26)
 -------------------
 * First release
