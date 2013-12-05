@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import sys
 from setuptools import setup, find_packages
 
 classifiers = [
@@ -6,12 +7,17 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Python",
+    "Programming Language :: Python :: 2.6",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.3",
     "Topic :: Database",
     "Topic :: Software Development",
     "Topic :: Software Development :: Testing",
 ]
+
+install_requires = ['psycopg2']
+if sys.version_info < (2, 7):
+    install_requires.append('unittest2')
 
 
 setup(
@@ -29,9 +35,7 @@ setup(
     package_dir={'': 'src'},
     package_data={'': ['buildout.cfg']},
     include_package_data=True,
-    install_requires=[
-        'psycopg2',
-    ],
+    install_requires=install_requires,
     extras_require=dict(
         test=[
             'flake8',

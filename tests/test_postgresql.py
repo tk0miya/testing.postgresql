@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import sys
+if sys.version_info < (2, 7):
+    import unittest2 as unittest
+else:
+    import unittest
+
 import os
 import signal
-import unittest
 import testing.postgresql
 from time import sleep
 import psycopg2
