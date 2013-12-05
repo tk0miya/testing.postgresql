@@ -113,6 +113,50 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual(cursor.fetchall(), [(1, 'hello'), (2, 'ciao')])
         conn.close()
 
+    def test_skipIfNotInstalled_found(self):
+        try:
+            search_paths = testing.postgresql.SEARCH_PATHS
+            testing.postgresql.SEARCH_PATHS = []
+
+            @testing.postgresql.skipIfNotInstalled
+            def testcase():
+                pass
+
+            self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+            self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+            self.assertEqual(True, testcase.__unittest_skip__)
+            self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
+        finally:
+            testing.postgresql.SEARCH_PATHS = search_paths
+
+    def test_skipIfNotInstalled_notfound(self):
+        @testing.postgresql.skipIfNotInstalled
+        def testcase():
+            pass
+
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    def test_skipIfNotInstalled_with_args_found(self):
+        path = testing.postgresql.find_program('postmaster', ['bin'])
+
+        @testing.postgresql.skipIfNotInstalled(path)
+        def testcase():
+            pass
+
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    def test_skipIfNotInstalled_with_args_notfound(self):
+        @testing.postgresql.skipIfNotInstalled("/path/to/anywhere")
+        def testcase():
+            pass
+
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
+        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
+        self.assertEqual(True, testcase.__unittest_skip__)
+        self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
+
     def test_skipIfNotFound_found(self):
         try:
             search_paths = testing.postgresql.SEARCH_PATHS
@@ -136,23 +180,3 @@ class TestPostgresql(unittest.TestCase):
 
         self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
-
-    def test_skipIfNotFound_with_args_found(self):
-        path = testing.postgresql.find_program('postmaster', ['bin'])
-
-        @testing.postgresql.skipIfNotFound(path)
-        def testcase():
-            pass
-
-        self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
-        self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
-
-    def test_skipIfNotFound_with_args_notfound(self):
-        @testing.postgresql.skipIfNotFound("/path/to/anywhere")
-        def testcase():
-            pass
-
-        self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
-        self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
-        self.assertEqual(True, testcase.__unittest_skip__)
-        self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
