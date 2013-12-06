@@ -14,21 +14,22 @@ Usage
 Create PostgreSQL instance using ``testing.postgresql.Postgresql``::
 
   import testing.postgresql
-  postgresql = testing.postgresql.Postgresql()  # Lanuch new PostgreSQL server
-
-  # connect to PostgreSQL
   from sqlalchemy import create_engine
-  engine = create_engine(postgresql.url())
 
-  # if you use postgresql or other drivers:
-  #   import psycopg2
-  #   db = psycopg2.connect(**postgresql.dsn())
+  # Lanuch new PostgreSQL server
+  with testing.postgresql.Postgresql() as postgresql:
+      # connect to PostgreSQL
+      engine = create_engine(postgresql.url())
 
-  #
-  # do any tests using PostgreSQL...
-  #
+      # if you use postgresql or other drivers:
+      #   import psycopg2
+      #   db = psycopg2.connect(**postgresql.dsn())
 
-  del postgresql                     # Terminate PostgreSQL server
+      #
+      # do any tests using PostgreSQL...
+      #
+
+  # PostgreSQL server is terminated here
 
 
 ``testing.postgresql.Postgresql`` executes ``initdb`` and ``postmaster`` on instantiation.
@@ -41,12 +42,6 @@ use ``copy_data_from`` keyword::
   postgresql = testing.postgresql.Postgresql(copy_data_from='/path/to/your/database')
 
 
-You can specify parameters for PostgreSQL with ``my_cnf`` keyword::
-
-  # boot PostgreSQL server without socket listener (use unix-domain socket) 
-  postgresql = testing.postgresql.Postgresql(my_cnf={'skip-networking': None})
-
-
 For example, you can setup new PostgreSQL server for each testcases on setUp() method::
 
   import unittest
@@ -54,7 +49,10 @@ For example, you can setup new PostgreSQL server for each testcases on setUp() m
 
   class MyTestCase(unittest.TestCase):
       def setUp(self):
-          self.postgresql = testing.postgresql.Postgresql(my_cnf={'skip-networking': None})
+          self.postgresql = testing.postgresql.Postgresql()
+
+      def tearDown(self):
+          self.postgresql.stop()
 
 
 Requirements
@@ -72,7 +70,7 @@ History
 
 1.0.1 (2013-12-05)
 -------------------
-* Add mysqld.skipIfNotInstalled decorator (alias of skipIfNotFound)
+* Add @skipIfNotInstalled decorator (alias of skipIfNotFound)
 * Suport python 2.6 and 3.2
 
 1.0.0 (2013-12-04)
