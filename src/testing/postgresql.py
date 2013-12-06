@@ -69,19 +69,13 @@ class Postgresql(object):
             self.start()
 
     def __del__(self):
-        import os
-        if self._owner_pid == os.getpid():
-            self.stop()
-            self.cleanup()
+        self.stop()
 
     def __enter__(self):
         return self
 
     def __exit__(self, *args):
-        import os
-        if self.pid and self._owner_pid == os.getpid():
-            self.stop()
-            self.cleanup()
+        self.stop()
 
     def __getattr__(self, name):
         if name in self.settings:
@@ -184,6 +178,11 @@ class Postgresql(object):
                         cursor.execute('CREATE DATABASE test')
 
     def stop(self, _signal=signal.SIGTERM):
+        if self._owner_pid == os.getpid():
+            self.terminate(_signal)
+            self.cleanup()
+
+    def terminate(self, _signal=signal.SIGTERM):
         import os
         if self.pid is None:
             return  # not started
@@ -206,6 +205,9 @@ class Postgresql(object):
         self.pid = None
 
     def cleanup(self):
+        if self.pid is not None:
+            return
+
         import os
         from shutil import rmtree
         if self._use_tmpdir and os.path.exists(self.base_dir):
