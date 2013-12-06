@@ -42,6 +42,31 @@ class TestPostgresql(unittest.TestCase):
         with self.assertRaises(OSError):
             os.kill(pid, 0)  # process is down
 
+    def test_stop(self):
+        # start postgresql server
+        pgsql = testing.postgresql.Postgresql()
+        self.assertIsNotNone(pgsql.pid)
+        self.assertTrue(os.path.exists(pgsql.base_dir))
+        pid = pgsql.pid
+        os.kill(pid, 0)  # process is alive
+
+        # call stop()
+        pgsql.stop()
+        self.assertIsNone(pgsql.pid)
+        self.assertFalse(os.path.exists(pgsql.base_dir))
+        with self.assertRaises(OSError):
+            os.kill(pid, 0)  # process is down
+
+        # call stop() again
+        pgsql.stop()
+        self.assertIsNone(pgsql.pid)
+        self.assertFalse(os.path.exists(pgsql.base_dir))
+        with self.assertRaises(OSError):
+            os.kill(pid, 0)  # process is down
+
+        # delete postgresql object after stop()
+        del pgsql
+
     def test_dsn_and_url(self):
         pgsql = testing.postgresql.Postgresql(port=12345, auto_start=0)
         self.assertEqual({'dbname': 'test', 'host': '127.0.0.1', 'port': 12345, 'user': 'postgres'},
