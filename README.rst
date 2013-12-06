@@ -68,6 +68,11 @@ Apache License 2.0
 History
 =======
 
+1.0.2 (2013-12-06)
+-------------------
+* Change behavior: Postgresql#stop() cleans workdir
+* Fix caught AttributeError on object deletion
+
 1.0.1 (2013-12-05)
 -------------------
 * Add @skipIfNotInstalled decorator (alias of skipIfNotFound)
