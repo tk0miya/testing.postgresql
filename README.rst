@@ -1,4 +1,13 @@
-``testing.postgresql`` automatically setups a postgresql instance in a temporary directory, and destroys it after testing
+About
+=====
+``testing.postgresql`` automatically setups a postgresql instance in a temporary directory, and destroys it after testing.
+
+Documentation
+  https://bitbucket.org/tk0miya/testing.postgresql/src/default/README.rst
+Issues
+  https://bitbucket.org/tk0miya/testing.postgresql/issues
+Download
+  https://pypi.python.org/pypi/testing.postgresql
 
 Install
 =======
