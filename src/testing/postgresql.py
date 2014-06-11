@@ -23,7 +23,7 @@ import tempfile
 import subprocess
 from glob import glob
 from time import sleep
-from shutil import copytree
+from shutil import copytree, rmtree
 from datetime import datetime
 
 __all__ = ['Postgresql', 'skipIfNotFound']
@@ -183,7 +183,6 @@ class Postgresql(object):
             self.cleanup()
 
     def terminate(self, _signal=signal.SIGTERM):
-        import os
         if self.pid is None:
             return  # not started
 
@@ -208,8 +207,6 @@ class Postgresql(object):
         if self.pid is not None:
             return
 
-        import os
-        from shutil import rmtree
         if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir)
 
