@@ -89,6 +89,10 @@ Apache License 2.0
 History
 =======
 
+1.0.3 (2014-06-11)
+-------------------
+* Fix ImportError if caught SIGINT on py3
+
 1.0.2 (2013-12-06)
 -------------------
 * Change behavior: Postgresql#stop() cleans workdir
