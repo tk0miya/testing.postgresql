@@ -2,6 +2,18 @@ About
 =====
 ``testing.postgresql`` automatically setups a postgresql instance in a temporary directory, and destroys it after testing.
 
+.. image:: https://drone.io/bitbucket.org/tk0miya/testing.postgresql/status.png
+   :target: https://drone.io/bitbucket.org/tk0miya/testing.postgresql
+   :alt: drone.io CI build status
+
+.. image:: https://pypip.in/v/testing.postgresql/badge.png
+   :target: https://pypi.python.org/pypi/testing.postgresql/
+   :alt: Latest PyPI version
+
+.. image:: https://pypip.in/d/testing.postgresql/badge.png
+   :target: https://pypi.python.org/pypi/testing.postgresql/
+   :alt: Number of PyPI downloads
+
 Documentation
   https://bitbucket.org/tk0miya/testing.postgresql/src/default/README.rst
 Issues
