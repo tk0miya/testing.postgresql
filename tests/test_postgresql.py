@@ -155,7 +155,7 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
             self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
             self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
+            self.assertEqual("PostgreSQL not found", testcase.__unittest_skip_why__)
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
 
@@ -185,7 +185,7 @@ class TestPostgresql(unittest.TestCase):
         self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
         self.assertEqual(True, testcase.__unittest_skip__)
-        self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
+        self.assertEqual("PostgreSQL not found", testcase.__unittest_skip_why__)
 
     def test_skipIfNotFound_found(self):
         try:
@@ -199,7 +199,7 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual(True, hasattr(testcase, '__unittest_skip__'))
             self.assertEqual(True, hasattr(testcase, '__unittest_skip_why__'))
             self.assertEqual(True, testcase.__unittest_skip__)
-            self.assertEqual("PostgreSQL does not found", testcase.__unittest_skip_why__)
+            self.assertEqual("PostgreSQL not found", testcase.__unittest_skip_why__)
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
 

@@ -29,6 +29,7 @@ from datetime import datetime
 __all__ = ['Postgresql', 'skipIfNotFound']
 
 SEARCH_PATHS = (['/usr/local/pgsql'] +
+                glob('/usr/local/bin/*') +  # for FreeBSD/OpenBSD
                 glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
                 glob('/opt/local/lib/postgresql-*'))  # for MacPorts
 DEFAULT_SETTINGS = dict(auto_start=2,
@@ -148,7 +149,6 @@ class Postgresql(object):
                          '-p', str(self.port),
                          '-D', os.path.join(self.base_dir, 'data'),
                          '-k', os.path.join(self.base_dir, 'tmp'),
-                         '--lc-messages=C',
                          *self.postmaster_args.split())
             except Exception as exc:
                 raise RuntimeError('failed to launch postmaster: %r' % exc)
@@ -158,7 +158,8 @@ class Postgresql(object):
             self.pid = pid
             exec_at = datetime.now()
             while True:
-                if os.waitpid(pid, os.WNOHANG) != (0, 0):
+                pid, status = os.waitpid(pid, os.WNOHANG)
+                if pid != 0:
                     raise RuntimeError("*** failed to launch postmaster ***\n" + self.read_log())
 
                 if re.search('accept connections', self.read_log()):
@@ -234,7 +235,7 @@ def skipIfNotInstalled(arg=None):
             except:
                 cond = True  # not found
 
-        return skipIf(cond, "PostgreSQL does not found")(fn)
+        return skipIf(cond, "PostgreSQL not found")(fn)
 
     if callable(arg):  # execute as simple decorator
         return decorator(arg, None)
