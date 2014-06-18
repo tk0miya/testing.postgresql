@@ -8,8 +8,10 @@ else:
 
 import os
 import signal
+import tempfile
 import testing.postgresql
 from time import sleep
+from shutil import rmtree
 import psycopg2
 
 
@@ -133,15 +135,28 @@ class TestPostgresql(unittest.TestCase):
             os.kill(pgsql.pid, 0)  # process is alive (calling stop() in child is ignored)
 
     def test_copy_data_from(self):
-        data_dir = os.path.join(os.path.dirname(__file__), 'copy-data-from')
-        pgsql = testing.postgresql.Postgresql(copy_data_from=data_dir)
+        try:
+            tmpdir = tempfile.mkdtemp()
 
-        # connect to postgresql
-        conn = psycopg2.connect(**pgsql.dsn())
-        with conn.cursor() as cursor:
-            cursor.execute('SELECT * FROM hello ORDER BY id')
-            self.assertEqual(cursor.fetchall(), [(1, 'hello'), (2, 'ciao')])
-        conn.close()
+            # create new database
+            with testing.postgresql.Postgresql(base_dir=tmpdir) as pgsql:
+                conn = psycopg2.connect(**pgsql.dsn())
+                with conn.cursor() as cursor:
+                    cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+                    cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+                conn.commit()
+                conn.close()
+
+            # create another database from first one
+            data_dir = os.path.join(tmpdir, 'data')
+            with testing.postgresql.Postgresql(copy_data_from=data_dir) as pgsql:
+                conn = psycopg2.connect(**pgsql.dsn())
+                with conn.cursor() as cursor:
+                    cursor.execute('SELECT * FROM hello ORDER BY id')
+                    self.assertEqual(cursor.fetchall(), [(1, 'hello'), (2, 'ciao')])
+                conn.close()
+        finally:
+            rmtree(tmpdir)
 
     def test_skipIfNotInstalled_found(self):
         try:
