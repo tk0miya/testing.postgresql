@@ -1,1 +1,0 @@
-/usr/lib/postgresql/9.1/bin/postgres "-D" "/home/katsuwo/work/prog/testing.postgresql/tests/copy-data-from/foo/data" "-k" "/home/katsuwo/work/prog/testing.postgresql/tests/copy-data-from/foo/tmp"
