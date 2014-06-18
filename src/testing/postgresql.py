@@ -193,7 +193,7 @@ class Postgresql(object):
         try:
             os.kill(self.pid, _signal)
             killed_at = datetime.now()
-            while (os.waitpid(self.pid, 0)):
+            while (os.waitpid(self.pid, os.WNOHANG)):
                 if (datetime.now() - killed_at).seconds > 10.0:
                     os.kill(self.pid, signal.SIGKILL)
                     raise RuntimeError("*** failed to shutdown postmaster (timeout) ***\n" + self.read_log())
