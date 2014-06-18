@@ -48,6 +48,7 @@ class Postgresql(object):
         self.settings.update(kwargs)
         self.pid = None
         self._owner_pid = os.getpid()
+        self._use_tmpdir = False
 
         if self.base_dir:
             if self.base_dir[0] != '/':
@@ -208,7 +209,7 @@ class Postgresql(object):
             return
 
         if self._use_tmpdir and os.path.exists(self.base_dir):
-            rmtree(self.base_dir)
+            rmtree(self.base_dir, ignore_errors=True)
 
     def read_log(self):
         try:
