@@ -159,8 +159,7 @@ class Postgresql(object):
             self.pid = pid
             exec_at = datetime.now()
             while True:
-                pid, status = os.waitpid(pid, os.WNOHANG)
-                if pid != 0:
+                if os.waitpid(pid, os.WNOHANG)[0] != 0:
                     raise RuntimeError("*** failed to launch postmaster ***\n" + self.read_log())
 
                 if re.search('accept connections', self.read_log()):
