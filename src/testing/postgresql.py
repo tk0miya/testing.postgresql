@@ -124,7 +124,7 @@ class Postgresql(object):
 
         # initdb
         if not os.path.exists(os.path.join(self.base_dir, 'data', 'PG_VERSION')):
-            args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data')] +
+            args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data'), '--lc-messages=C'] +
                     self.initdb_args.split())
 
             try:
