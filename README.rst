@@ -89,6 +89,12 @@ Apache License 2.0
 History
 =======
 
+1.0.4 (2014-06-19)
+-------------------
+* Fix timeout on terminating postgresql
+* Support PostgreSQL on /usr/local/bin (cf. FreeBSD ports)
+* Fix bugs
+
 1.0.3 (2014-06-11)
 -------------------
 * Fix ImportError if caught SIGINT on py3
