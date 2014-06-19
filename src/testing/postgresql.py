@@ -123,7 +123,7 @@ class Postgresql(object):
 
         # initdb
         if not os.path.exists(os.path.join(self.base_dir, 'data', 'PG_VERSION')):
-            args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data')] +
+            args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data'), '--lc-messages=C'] +
                     self.initdb_args.split())
 
             try:
@@ -149,7 +149,6 @@ class Postgresql(object):
                          '-p', str(self.port),
                          '-D', os.path.join(self.base_dir, 'data'),
                          '-k', os.path.join(self.base_dir, 'tmp'),
-                         '--lc-messages=C',
                          *self.postmaster_args.split())
             except Exception as exc:
                 raise RuntimeError('failed to launch postmaster: %r' % exc)
