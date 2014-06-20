@@ -103,11 +103,14 @@ class TestPostgresql(unittest.TestCase):
         try:
             search_paths = testing.postgresql.SEARCH_PATHS
             testing.postgresql.SEARCH_PATHS = []
+            path_env = os.environ['PATH']
+            os.environ['PATH'] = "/bin"
 
             with self.assertRaises(RuntimeError):
                 testing.postgresql.Postgresql()
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
+            os.environ['PATH'] = path_env
 
     def test_fork(self):
         pgsql = testing.postgresql.Postgresql()
