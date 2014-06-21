@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['psycopg2']
+install_requires = ['psycopg2 >= 2.5']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
