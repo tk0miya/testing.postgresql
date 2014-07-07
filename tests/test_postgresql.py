@@ -103,11 +103,14 @@ class TestPostgresql(unittest.TestCase):
         try:
             search_paths = testing.postgresql.SEARCH_PATHS
             testing.postgresql.SEARCH_PATHS = []
+            path_env = os.environ['PATH']
+            os.environ['PATH'] = ''
 
             with self.assertRaises(RuntimeError):
                 testing.postgresql.Postgresql()
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
+            os.environ['PATH'] = path_env
 
     def test_fork(self):
         pgsql = testing.postgresql.Postgresql()
@@ -162,6 +165,8 @@ class TestPostgresql(unittest.TestCase):
         try:
             search_paths = testing.postgresql.SEARCH_PATHS
             testing.postgresql.SEARCH_PATHS = []
+            path_env = os.environ['PATH']
+            os.environ['PATH'] = ''
 
             @testing.postgresql.skipIfNotInstalled
             def testcase():
@@ -173,6 +178,7 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual("PostgreSQL not found", testcase.__unittest_skip_why__)
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
+            os.environ['PATH'] = path_env
 
     def test_skipIfNotInstalled_notfound(self):
         @testing.postgresql.skipIfNotInstalled
@@ -206,6 +212,8 @@ class TestPostgresql(unittest.TestCase):
         try:
             search_paths = testing.postgresql.SEARCH_PATHS
             testing.postgresql.SEARCH_PATHS = []
+            path_env = os.environ['PATH']
+            os.environ['PATH'] = ''
 
             @testing.postgresql.skipIfNotFound
             def testcase():
@@ -217,6 +225,7 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual("PostgreSQL not found", testcase.__unittest_skip_why__)
         finally:
             testing.postgresql.SEARCH_PATHS = search_paths
+            os.environ['PATH'] = path_env
 
     def test_skipIfNotFound_notfound(self):
         @testing.postgresql.skipIfNotFound

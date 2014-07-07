@@ -28,8 +28,7 @@ from datetime import datetime
 
 __all__ = ['Postgresql', 'skipIfNotFound']
 
-SEARCH_PATHS = (['/usr/local/pgsql'] +
-                glob('/usr/local/bin/*') +  # for FreeBSD/OpenBSD
+SEARCH_PATHS = (['/usr/local/pgsql', '/usr/local'] +
                 glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
                 glob('/opt/local/lib/postgresql-*'))  # for MacPorts
 DEFAULT_SETTINGS = dict(auto_start=2,
@@ -261,7 +260,8 @@ def find_program(name, subdirs):
 
 
 def get_path_of(name):
-    path = subprocess.Popen(['which', name], stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()[0]
+    path = subprocess.Popen(['/usr/bin/which', name], stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE).communicate()[0]
     if path:
         return path.rstrip().decode('utf-8')
     else:
