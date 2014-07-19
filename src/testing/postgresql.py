@@ -260,8 +260,9 @@ def find_program(name, subdirs):
 
 
 def get_path_of(name):
-    path = subprocess.Popen(['/usr/bin/which', name], stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE).communicate()[0]
+    path = subprocess.Popen(['/usr/bin/which', name],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()[0]
     if path:
         return path.rstrip().decode('utf-8')
     else:
