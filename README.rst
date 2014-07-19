@@ -89,6 +89,11 @@ Apache License 2.0
 History
 =======
 
+1.0.5 (2014-07-19)
+-------------------
+* Fix path for PostgreSQL
+* Use absolute path for which command
+
 1.0.4 (2014-06-19)
 -------------------
 * Fix timeout on terminating postgresql
