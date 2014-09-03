@@ -177,12 +177,12 @@ class Postgresql(object):
                     if cursor.fetchone()[0] <= 0:
                         cursor.execute('CREATE DATABASE test')
 
-    def stop(self, _signal=signal.SIGTERM):
+    def stop(self, _signal=signal.SIGINT):
         if self._owner_pid == os.getpid():
             self.terminate(_signal)
             self.cleanup()
 
-    def terminate(self, _signal=signal.SIGTERM):
+    def terminate(self, _signal=signal.SIGINT):
         if self.pid is None:
             return  # not started
 
