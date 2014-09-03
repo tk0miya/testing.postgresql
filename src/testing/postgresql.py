@@ -198,7 +198,7 @@ class Postgresql(object):
                     raise RuntimeError("*** failed to shutdown postmaster (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
-        except:
+        except OSError:
             pass
 
         self.pid = None
