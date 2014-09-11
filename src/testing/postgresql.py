@@ -100,6 +100,7 @@ class Postgresql(object):
         url = ('postgresql://%s@%s:%d/%s' %
                (params['user'], params['host'], params['port'], params['dbname']))
 
+
         return url
 
     def setup(self):
@@ -161,7 +162,7 @@ class Postgresql(object):
                 if os.waitpid(pid, os.WNOHANG)[0] != 0:
                     raise RuntimeError("*** failed to launch postmaster ***\n" + self.read_log())
 
-                if re.search('accept connections', self.read_log()):
+                if self.is_connection_available():
                     break
 
                 if (datetime.now() - exec_at).seconds > 10.0:
@@ -216,6 +217,15 @@ class Postgresql(object):
                 return log.read()
         except Exception as exc:
             raise RuntimeError("failed to open file:tmp/postgresql.log: %r" % exc)
+
+    def is_connection_available(self):
+        try:
+            with psycopg2.connect(**self.dsn(dbname='template1')):
+                pass
+        except psycopg2.OperationalError:
+            return False
+        else:
+            return True
 
 
 def skipIfNotInstalled(arg=None):
