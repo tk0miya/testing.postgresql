@@ -14,7 +14,6 @@
 #  limitations under the License.
 
 import os
-import re
 import sys
 import socket
 import signal
@@ -99,7 +98,6 @@ class Postgresql(object):
 
         url = ('postgresql://%s@%s:%d/%s' %
                (params['user'], params['host'], params['port'], params['dbname']))
-
 
         return url
 
