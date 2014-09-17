@@ -89,6 +89,10 @@ Apache License 2.0
 History
 =======
 
+1.0.6 (2014-07-19)
+-------------------
+* Fix #1 Dirty postmaster shut down
+
 1.0.5 (2014-07-19)
 -------------------
 * Fix path for PostgreSQL
