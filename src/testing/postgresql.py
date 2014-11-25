@@ -113,12 +113,10 @@ class Postgresql(object):
 
         # (re)create directory structure
         for subdir in ['data', 'tmp']:
-            try:
-                path = os.path.join(self.base_dir, subdir)
+            path = os.path.join(self.base_dir, subdir)
+            if not os.path.exists(path):
                 os.makedirs(path)
                 os.chmod(path, 0o700)
-            except:
-                pass
 
         # initdb
         if not os.path.exists(os.path.join(self.base_dir, 'data', 'PG_VERSION')):
