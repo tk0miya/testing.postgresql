@@ -53,7 +53,7 @@ Create PostgreSQL instance using ``testing.postgresql.Postgresql``::
   # PostgreSQL server is terminated here
 
 
-``testing.postgresql.Postgresql`` executes ``initdb`` and ``postmaster`` on instantiation.
+``testing.postgresql.Postgresql`` executes ``initdb`` and ``postgres`` on instantiation.
 On deleting Postgresql object, it terminates PostgreSQL instance and removes temporary directory.
 
 If you want a database including tables and any fixtures for your apps,

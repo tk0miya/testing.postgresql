@@ -34,8 +34,8 @@ DEFAULT_SETTINGS = dict(auto_start=2,
                         base_dir=None,
                         initdb=None,
                         initdb_args='-U postgres -A trust',
-                        postmaster=None,
-                        postmaster_args='-h 127.0.0.1 -F',
+                        postgres=None,
+                        postgres_args='-h 127.0.0.1 -F',
                         pid=None,
                         port=None,
                         copy_data_from=None)
@@ -59,8 +59,8 @@ class Postgresql(object):
         if self.initdb is None:
             self.settings['initdb'] = find_program('initdb', ['bin'])
 
-        if self.postmaster is None:
-            self.settings['postmaster'] = find_program('postmaster', ['bin'])
+        if self.postgres is None:
+            self.settings['postgres'] = find_program('postgres', ['bin'])
 
         if self.auto_start:
             if self.auto_start >= 2:
@@ -142,13 +142,13 @@ class Postgresql(object):
             os.dup2(logger.fileno(), sys.__stderr__.fileno())
 
             try:
-                os.execl(self.postmaster, self.postmaster,
+                os.execl(self.postgres, self.postgres,
                          '-p', str(self.port),
                          '-D', os.path.join(self.base_dir, 'data'),
                          '-k', os.path.join(self.base_dir, 'tmp'),
-                         *self.postmaster_args.split())
+                         *self.postgres_args.split())
             except Exception as exc:
-                raise RuntimeError('failed to launch postmaster: %r' % exc)
+                raise RuntimeError('failed to launch postgres: %r' % exc)
         else:
             logger.close()
 
@@ -156,13 +156,13 @@ class Postgresql(object):
             exec_at = datetime.now()
             while True:
                 if os.waitpid(pid, os.WNOHANG)[0] != 0:
-                    raise RuntimeError("*** failed to launch postmaster ***\n" + self.read_log())
+                    raise RuntimeError("*** failed to launch postgres ***\n" + self.read_log())
 
                 if self.is_connection_available():
                     break
 
                 if (datetime.now() - exec_at).seconds > 10.0:
-                    raise RuntimeError("*** failed to launch postmaster (timeout) ***\n" + self.read_log())
+                    raise RuntimeError("*** failed to launch postgres (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
 
@@ -192,7 +192,7 @@ class Postgresql(object):
             while (os.waitpid(self.pid, os.WNOHANG)):
                 if (datetime.now() - killed_at).seconds > 10.0:
                     os.kill(self.pid, signal.SIGKILL)
-                    raise RuntimeError("*** failed to shutdown postmaster (timeout) ***\n" + self.read_log())
+                    raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
         except OSError:
@@ -235,7 +235,7 @@ def skipIfNotInstalled(arg=None):
             cond = not os.path.exists(path)
         else:
             try:
-                find_program('postmaster', ['bin'])  # raise exception if not found
+                find_program('postgres', ['bin'])  # raise exception if not found
                 cond = False
             except:
                 cond = True  # not found
