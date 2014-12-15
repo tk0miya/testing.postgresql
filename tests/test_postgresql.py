@@ -189,7 +189,7 @@ class TestPostgresql(unittest.TestCase):
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
 
     def test_skipIfNotInstalled_with_args_found(self):
-        path = testing.postgresql.find_program('postmaster', ['bin'])
+        path = testing.postgresql.find_program('postgres', ['bin'])
 
         @testing.postgresql.skipIfNotInstalled(path)
         def testcase():
