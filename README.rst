@@ -89,6 +89,10 @@ Apache License 2.0
 History
 =======
 
+1.1.0 (2014-12-20)
+-------------------
+* Invoke 'postgres' command instead of 'postmaster'
+
 1.0.6 (2014-07-19)
 -------------------
 * Fix #1 Dirty postmaster shut down
