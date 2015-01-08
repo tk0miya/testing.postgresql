@@ -35,7 +35,7 @@ DEFAULT_SETTINGS = dict(auto_start=2,
                         initdb=None,
                         initdb_args='-U postgres -A trust',
                         postgres=None,
-                        postgres_args='-h 127.0.0.1 -F',
+                        postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
                         pid=None,
                         port=None,
                         copy_data_from=None)
