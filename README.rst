@@ -89,6 +89,13 @@ Apache License 2.0
 History
 =======
 
+1.1.1 (2015-01-18)
+-------------------
+* Disable logging_collector feature (For Fedora)
+* Fix bugs:
+
+  - MacPorts default path is /opt/local/lib/postgresql*, no dash
+
 1.1.0 (2014-12-20)
 -------------------
 * Invoke 'postgres' command instead of 'postmaster'
