@@ -124,9 +124,12 @@ class Postgresql(object):
                     self.initdb_args.split())
 
             try:
-                subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.STDOUT).communicate()
-            except Exception as exc:
-                raise RuntimeError("failed to spawn initdb: %r" % exc)
+                p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                output, err = p.communicate()
+                if p.returncode != 0:
+                    raise RuntimeError("initdb failed: %r" % err)
+            except OSError as exc:
+                raise RuntimeError("failed to spawn initdb: %s" % exc)
 
     def start(self):
         if self.pid:
