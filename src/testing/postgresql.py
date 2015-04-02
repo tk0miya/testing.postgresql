@@ -178,9 +178,8 @@ class Postgresql(object):
                         cursor.execute('CREATE DATABASE test')
 
     def stop(self, _signal=signal.SIGINT):
-        if self._owner_pid == os.getpid():
-            self.terminate(_signal)
-            self.cleanup()
+        self.terminate(_signal)
+        self.cleanup()
 
     def terminate(self, _signal=signal.SIGINT):
         if self.pid is None:
