@@ -89,6 +89,13 @@ Apache License 2.0
 History
 =======
 
+1.1.2 (2015-04-06)
+-------------------
+* Fix bugs:
+
+  - Do not call os.getpid() on destructor (if not needed)
+  - Raise detailed RuntimeError if initdb exits non-zero
+
 1.1.1 (2015-01-18)
 -------------------
 * Disable logging_collector feature (For Fedora)
