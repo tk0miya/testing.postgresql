@@ -16,7 +16,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['psycopg2 >= 2.5']
+install_requires = ['pg8000 >= 1.10']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
@@ -24,7 +24,8 @@ if sys.version_info < (2, 7):
 setup(
     name='testing.postgresql',
     version='1.1.2',
-    description='automatically setups a postgresql instance in a temporary directory, and destroys it after testing',
+    description='automatically setups a postgresql instance in a temporary " \
+        "directory, and destroys it after testing',
     long_description=open('README.rst').read(),
     classifiers=classifiers,
     keywords=[],
