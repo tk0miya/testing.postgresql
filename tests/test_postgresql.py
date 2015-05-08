@@ -12,7 +12,8 @@ import tempfile
 import testing.postgresql
 from time import sleep
 from shutil import rmtree
-import psycopg2
+import pg8000
+from contextlib import closing
 
 
 class TestPostgresql(unittest.TestCase):
@@ -21,13 +22,13 @@ class TestPostgresql(unittest.TestCase):
         pgsql = testing.postgresql.Postgresql()
         self.assertIsNotNone(pgsql)
         params = pgsql.dsn()
-        self.assertEqual('test', params['dbname'])
+        self.assertEqual('test', params['database'])
         self.assertEqual('127.0.0.1', params['host'])
         self.assertEqual(pgsql.port, params['port'])
         self.assertEqual('postgres', params['user'])
 
         # connect to postgresql
-        conn = psycopg2.connect(**pgsql.dsn())
+        conn = pg8000.connect(**pgsql.dsn())
         self.assertIsNotNone(conn)
         self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
         conn.close()
@@ -71,7 +72,7 @@ class TestPostgresql(unittest.TestCase):
 
     def test_dsn_and_url(self):
         pgsql = testing.postgresql.Postgresql(port=12345, auto_start=0)
-        self.assertEqual({'dbname': 'test', 'host': '127.0.0.1', 'port': 12345, 'user': 'postgres'},
+        self.assertEqual({'database': 'test', 'host': '127.0.0.1', 'port': 12345, 'user': 'postgres'},
                          pgsql.dsn())
         self.assertEqual("postgresql://postgres@127.0.0.1:12345/test", pgsql.url())
 
@@ -80,7 +81,7 @@ class TestPostgresql(unittest.TestCase):
             self.assertIsNotNone(pgsql)
 
             # connect to postgresql
-            conn = psycopg2.connect(**pgsql.dsn())
+            conn = pg8000.connect(**pgsql.dsn())
             self.assertIsNotNone(conn)
             conn.close()
 
@@ -143,8 +144,8 @@ class TestPostgresql(unittest.TestCase):
 
             # create new database
             with testing.postgresql.Postgresql(base_dir=tmpdir) as pgsql:
-                conn = psycopg2.connect(**pgsql.dsn())
-                with conn.cursor() as cursor:
+                conn = pg8000.connect(**pgsql.dsn())
+                with closing(conn.cursor()) as cursor:
                     cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
                     cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
                 conn.commit()
@@ -153,10 +154,10 @@ class TestPostgresql(unittest.TestCase):
             # create another database from first one
             data_dir = os.path.join(tmpdir, 'data')
             with testing.postgresql.Postgresql(copy_data_from=data_dir) as pgsql:
-                conn = psycopg2.connect(**pgsql.dsn())
-                with conn.cursor() as cursor:
+                conn = pg8000.connect(**pgsql.dsn())
+                with closing(conn.cursor()) as cursor:
                     cursor.execute('SELECT * FROM hello ORDER BY id')
-                    self.assertEqual(cursor.fetchall(), [(1, 'hello'), (2, 'ciao')])
+                    self.assertEqual(cursor.fetchall(), ([1, 'hello'], [2, 'ciao']))
                 conn.close()
         finally:
             rmtree(tmpdir)

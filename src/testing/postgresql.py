@@ -17,13 +17,15 @@ import os
 import sys
 import socket
 import signal
-import psycopg2
+import pg8000
 import tempfile
 import subprocess
 from glob import glob
 from time import sleep
 from shutil import copytree, rmtree
 from datetime import datetime
+from contextlib import closing
+
 
 __all__ = ['Postgresql', 'skipIfNotFound']
 
@@ -84,12 +86,12 @@ class Postgresql(object):
             raise AttributeError("'Postgresql' object has no attribute '%s'" % name)
 
     def dsn(self, **kwargs):
-        # "dbname=test host=localhost user=postgres"
+        # "database=test host=localhost user=postgres"
         params = dict(kwargs)
         params.setdefault('port', self.port)
         params.setdefault('host', '127.0.0.1')
         params.setdefault('user', 'postgres')
-        params.setdefault('dbname', 'test')
+        params.setdefault('database', 'test')
 
         return params
 
@@ -97,7 +99,7 @@ class Postgresql(object):
         params = self.dsn(**kwargs)
 
         url = ('postgresql://%s@%s:%d/%s' %
-               (params['user'], params['host'], params['port'], params['dbname']))
+               (params['user'], params['host'], params['port'], params['database']))
 
         return url
 
@@ -170,9 +172,9 @@ class Postgresql(object):
                 sleep(0.1)
 
             # create test database
-            with psycopg2.connect(**self.dsn(dbname='template1')) as conn:
-                conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-                with conn.cursor() as cursor:
+            with closing(pg8000.connect(**self.dsn(database='template1'))) as conn:
+                conn.autocommit = True
+                with closing(conn.cursor()) as cursor:
                     cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
                     if cursor.fetchone()[0] <= 0:
                         cursor.execute('CREATE DATABASE test')
@@ -218,9 +220,9 @@ class Postgresql(object):
 
     def is_connection_available(self):
         try:
-            with psycopg2.connect(**self.dsn(dbname='template1')):
+            with closing(pg8000.connect(**self.dsn(database='template1'))):
                 pass
-        except psycopg2.OperationalError:
+        except pg8000.InterfaceError:
             return False
         else:
             return True
