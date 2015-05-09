@@ -41,6 +41,7 @@ setup(
     extras_require=dict(
         testing=[
             'nose',
+            'psycopg2',
         ],
     ),
     test_suite='nose.collector',

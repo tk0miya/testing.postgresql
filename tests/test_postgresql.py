@@ -13,37 +13,45 @@ import testing.postgresql
 from time import sleep
 from shutil import rmtree
 import pg8000
+import psycopg2
 from contextlib import closing
 
 
 class TestPostgresql(unittest.TestCase):
     def test_basic(self):
-        # start postgresql server
-        pgsql = testing.postgresql.Postgresql()
-        self.assertIsNotNone(pgsql)
-        params = pgsql.dsn()
-        self.assertEqual('test', params['database'])
-        self.assertEqual('127.0.0.1', params['host'])
-        self.assertEqual(pgsql.port, params['port'])
-        self.assertEqual('postgres', params['user'])
+        try:
+            # start postgresql server
+            pgsql = testing.postgresql.Postgresql()
+            self.assertIsNotNone(pgsql)
+            params = pgsql.dsn()
+            self.assertEqual('test', params['database'])
+            self.assertEqual('127.0.0.1', params['host'])
+            self.assertEqual(pgsql.port, params['port'])
+            self.assertEqual('postgres', params['user'])
 
-        # connect to postgresql
-        conn = pg8000.connect(**pgsql.dsn())
-        self.assertIsNotNone(conn)
-        self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
-        conn.close()
+            # connect to postgresql (w/ psycopg2)
+            conn = psycopg2.connect(**pgsql.dsn())
+            self.assertIsNotNone(conn)
+            self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
+            conn.close()
 
-        # shutting down
-        pid = pgsql.pid
-        self.assertTrue(pid)
-        os.kill(pid, 0)  # process is alive
+            # connect to postgresql (w/ pg8000)
+            conn = pg8000.connect(**pgsql.dsn())
+            self.assertIsNotNone(conn)
+            self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
+            conn.close()
+        finally:
+            # shutting down
+            pid = pgsql.pid
+            self.assertTrue(pid)
+            os.kill(pid, 0)  # process is alive
 
-        pgsql.stop()
-        sleep(1)
+            pgsql.stop()
+            sleep(1)
 
-        self.assertIsNone(pgsql.pid)
-        with self.assertRaises(OSError):
-            os.kill(pid, 0)  # process is down
+            self.assertIsNone(pgsql.pid)
+            with self.assertRaises(OSError):
+                os.kill(pid, 0)  # process is down
 
     def test_stop(self):
         # start postgresql server
