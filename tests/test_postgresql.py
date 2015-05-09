@@ -14,6 +14,7 @@ from time import sleep
 from shutil import rmtree
 import pg8000
 import psycopg2
+import sqlalchemy
 from contextlib import closing
 
 
@@ -34,6 +35,10 @@ class TestPostgresql(unittest.TestCase):
             self.assertIsNotNone(conn)
             self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
             conn.close()
+
+            # connect to postgresql (w/ sqlalchemy)
+            engine = sqlalchemy.create_engine(pgsql.url())
+            self.assertIsNotNone(engine)
 
             # connect to postgresql (w/ pg8000)
             conn = pg8000.connect(**pgsql.dsn())
