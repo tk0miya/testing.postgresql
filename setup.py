@@ -42,6 +42,7 @@ setup(
         testing=[
             'nose',
             'psycopg2',
+            'SQLAlchemy',
         ],
     ),
     test_suite='nose.collector',
