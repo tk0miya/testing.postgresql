@@ -222,7 +222,7 @@ class Postgresql(object):
         try:
             with closing(pg8000.connect(**self.dsn(database='template1'))):
                 pass
-        except pg8000.InterfaceError:
+        except pg8000.Error:
             return False
         else:
             return True
