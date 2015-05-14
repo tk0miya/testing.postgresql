@@ -172,7 +172,7 @@ class Postgresql(object):
                 sleep(0.1)
 
             # create test database
-            with closing(pg8000.connect(**self.dsn(database='template1'))) as conn:
+            with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
                 conn.autocommit = True
                 with closing(conn.cursor()) as cursor:
                     cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
