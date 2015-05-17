@@ -21,9 +21,9 @@ Download
 
 Install
 =======
-Use easy_install (or pip)::
+Use pip::
 
-   $ easy_install testing.postgresql
+   $ pip install testing.postgresql
 
 And ``testing.postgresql`` requires PostgreSQL server in your PATH.
 
