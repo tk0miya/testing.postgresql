@@ -13,9 +13,9 @@ About
 
 
 Documentation
-  https://bitbucket.org/tk0miya/testing.postgresql/src/default/README.rst
+  https://github.com/tk0miya/testing.postgresql
 Issues
-  https://bitbucket.org/tk0miya/testing.postgresql/issues
+  https://github.com/tk0miya/testing.postgresql/issues
 Download
   https://pypi.python.org/pypi/testing.postgresql
 
