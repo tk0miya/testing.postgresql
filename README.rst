@@ -87,6 +87,11 @@ Apache License 2.0
 History
 =======
 
+1.2.0 (2015-05-17)
+-------------------
+* Use `pg8000` for connector to create test database
+* Connect to `postgres` to create test database (instead of `template1`)
+
 1.1.2 (2015-04-06)
 -------------------
 * Fix bugs:
