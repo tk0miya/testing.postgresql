@@ -210,6 +210,7 @@ class Postgresql(object):
 
         if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir, ignore_errors=True)
+            self._use_tmpdir = False
 
     def read_log(self):
         try:
