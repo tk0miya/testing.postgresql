@@ -87,6 +87,12 @@ Apache License 2.0
 History
 =======
 
+1.2.1 (2015-08-22)
+-------------------
+* Fix bug:
+
+  - Close #3 Fix AttributeError on end of tests
+
 1.2.0 (2015-05-17)
 -------------------
 * Use `pg8000` for connector to create test database
