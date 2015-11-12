@@ -24,8 +24,8 @@ if sys.version_info < (2, 7):
 setup(
     name='testing.postgresql',
     version='1.2.1',
-    description='automatically setups a postgresql instance in a temporary " \
-        "directory, and destroys it after testing',
+    description='automatically setups a postgresql instance in a temporary '
+        'directory, and destroys it after testing',
     long_description=open('README.rst').read(),
     classifiers=classifiers,
     keywords=[],
