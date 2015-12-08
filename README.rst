@@ -74,6 +74,37 @@ For example, you can setup new PostgreSQL server for each testcases on setUp() m
           self.postgresql.stop()
 
 
+To make your tests faster
+-------------------------
+
+``testing.postgresql.Postgresql`` invokes ``initdb`` command on every instantiation.
+That is very simple. But, in many cases, it is very waste that generating brandnew database for each testcase.
+
+To optimize the behavior, use ``testing.postgresql.PostgresqlFactory``.
+The factory class is able to cache the generated database beyond the testcases,
+and it reduces the number of invocation of ``initdb`` command::
+
+  import unittest
+  import testing.postgresql
+
+  # Generate Postgresql class which shares the generated database
+  Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True)
+
+
+  def tearDownModule(self):
+      # clear cached database at end of tests
+      Postgresql.clear_cache()
+
+
+  class MyTestCase(unittest.TestCase):
+      def setUp(self):
+          # Use the generated Postgresql class instead of testing.postgresql.Postgresql
+          self.postgresql = Postgresql()
+
+      def tearDown(self):
+          self.postgresql.stop()
+
+
 Requirements
 ============
 * Python 2.6, 2.7, 3.2, 3.3, 3.4

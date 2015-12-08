@@ -43,6 +43,25 @@ DEFAULT_SETTINGS = dict(auto_start=2,
                         copy_data_from=None)
 
 
+class PostgresqlFactory(object):
+    def __init__(self, **kwargs):
+        self.initdb_cache = None
+        self.settings = kwargs
+
+        if self.settings.pop('use_initdb_cache', None):
+            self.initdb_cache = Postgresql(auto_start=0)
+            self.initdb_cache.setup()
+            self.settings['copy_data_from'] = self.initdb_cache.base_dir + '/data'
+
+    def __call__(self):
+        return Postgresql(**self.settings)
+
+    def clear_cache(self):
+        if self.initdb_cache:
+            self.settings['copy_data_from'] = None
+            self.initdb_cache.cleanup()
+
+
 class Postgresql(object):
     def __init__(self, **kwargs):
         self.settings = dict(DEFAULT_SETTINGS)

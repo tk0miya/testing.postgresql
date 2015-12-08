@@ -248,3 +248,14 @@ class TestPostgresql(unittest.TestCase):
 
         self.assertEqual(False, hasattr(testcase, '__unittest_skip__'))
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
+
+    def test_PostgresqlFactory(self):
+        Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True)
+        with Postgresql() as pgsql1:
+            self.assertTrue(pgsql1.copy_data_from)
+            copy_data_from1 = pgsql1.copy_data_from
+            self.assertTrue(os.path.exists(copy_data_from1))
+        with Postgresql() as pgsql2:
+            self.assertEqual(copy_data_from1, pgsql2.copy_data_from)
+        Postgresql.clear_cache()
+        self.assertFalse(os.path.exists(copy_data_from1))
