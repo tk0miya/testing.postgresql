@@ -48,9 +48,20 @@ class PostgresqlFactory(object):
         self.initdb_cache = None
         self.settings = kwargs
 
+        initdb_handler = self.settings.pop('initdb_handler', None)
         if self.settings.pop('use_initdb_cache', None):
-            self.initdb_cache = Postgresql(auto_start=0)
-            self.initdb_cache.setup()
+            if initdb_handler:
+                try:
+                    self.initdb_cache = Postgresql()
+                    initdb_handler(self.initdb_cache)
+                except:
+                    self.initdb_cache.stop()
+                    raise
+                finally:
+                    self.initdb_cache.terminate()
+            else:
+                self.initdb_cache = Postgresql(auto_start=0)
+                self.initdb_cache.setup()
             self.settings['copy_data_from'] = self.initdb_cache.base_dir + '/data'
 
     def __call__(self):

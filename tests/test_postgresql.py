@@ -259,3 +259,24 @@ class TestPostgresql(unittest.TestCase):
             self.assertEqual(copy_data_from1, pgsql2.copy_data_from)
         Postgresql.clear_cache()
         self.assertFalse(os.path.exists(copy_data_from1))
+
+    def test_PostgresqlFactory_initdb_handler(self):
+        def handler(pgsql):
+            conn = pg8000.connect(**pgsql.dsn())
+            with closing(conn.cursor()) as cursor:
+                cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+                cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+            conn.commit()
+            conn.close()
+
+        Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True,
+                                                          initdb_handler=handler)
+        try:
+            with Postgresql() as pgsql:
+                conn = pg8000.connect(**pgsql.dsn())
+                with closing(conn.cursor()) as cursor:
+                    cursor.execute('SELECT * FROM hello ORDER BY id')
+                    self.assertEqual(cursor.fetchall(), ([1, 'hello'], [2, 'ciao']))
+                conn.close()
+        finally:
+            Postgresql.clear_cache()

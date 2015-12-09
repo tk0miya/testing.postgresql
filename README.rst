@@ -104,6 +104,22 @@ and it reduces the number of invocation of ``initdb`` command::
       def tearDown(self):
           self.postgresql.stop()
 
+If you want to insert or create any data and tables as the cached database, use ``initdb_handler`` option::
+
+  # create initial data on create the database which is cached through testcases
+  def handler(postgresql):
+      conn = psycopg2.connect(**postgresql.dsn())
+      cursor = conn.cursor()
+      cursor.execute("CREATE TABLE hello(id int, value varchar(256))")
+      cursor.execute("INSERT INTO hello values(1, 'hello'), (2, 'ciao')")
+      cursor.close()
+      conn.commit()
+      conn.close()
+
+  # Use `handler()` on initialize database
+  Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True,
+                                                    initdb_handler=handler)
+
 
 Requirements
 ============
