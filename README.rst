@@ -123,7 +123,7 @@ If you want to insert or create any data and tables as the cached database, use 
 
 Requirements
 ============
-* Python 2.6, 2.7, 3.2, 3.3, 3.4
+* Python 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
 * pg8000 1.10
 
 License

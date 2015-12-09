@@ -11,6 +11,8 @@ classifiers = [
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3.2",
     "Programming Language :: Python :: 3.3",
+    "Programming Language :: Python :: 3.4",
+    "Programming Language :: Python :: 3.5",
     "Topic :: Database",
     "Topic :: Software Development",
     "Topic :: Software Development :: Testing",
