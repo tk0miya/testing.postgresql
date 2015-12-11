@@ -187,7 +187,6 @@ class Postgresql(object):
         else:
             logger.close()
 
-            self.pid = pid
             exec_at = datetime.now()
             while True:
                 if os.waitpid(pid, os.WNOHANG)[0] != 0:
@@ -200,6 +199,8 @@ class Postgresql(object):
                     raise RuntimeError("*** failed to launch postgres (timeout) ***\n" + self.read_log())
 
                 sleep(0.1)
+
+            self.pid = pid
 
             # create test database
             with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
