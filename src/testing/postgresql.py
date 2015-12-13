@@ -15,7 +15,6 @@
 
 import os
 import sys
-import socket
 import pg8000
 import subprocess
 from glob import glob
@@ -90,7 +89,7 @@ class Postgresql(Database):
     def dsn(self, **kwargs):
         # "database=test host=localhost user=postgres"
         params = dict(kwargs)
-        params.setdefault('port', self.port)
+        params.setdefault('port', self.settings['port'])
         params.setdefault('host', '127.0.0.1')
         params.setdefault('user', 'postgres')
         params.setdefault('database', 'test')
@@ -137,13 +136,9 @@ class Postgresql(Database):
                 self.cleanup()
                 raise RuntimeError("failed to spawn initdb: %s" % exc)
 
-    def prestart(self):
-        if self.port is None:
-            self.port = get_unused_port()
-
     def get_server_commandline(self):
         return ([self.postgres,
-                 '-p', str(self.port),
+                 '-p', str(self.settings['port']),
                  '-D', os.path.join(self.base_dir, 'data'),
                  '-k', os.path.join(self.base_dir, 'tmp')] +
                 self.settings['postgres_args'].split())
@@ -215,12 +210,3 @@ def get_path_of(name):
         return path.rstrip().decode('utf-8')
     else:
         return None
-
-
-def get_unused_port():
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind(('localhost', 0))
-    _, port = sock.getsockname()
-    sock.close()
-
-    return port

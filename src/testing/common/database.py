@@ -16,6 +16,7 @@
 import os
 import sys
 import signal
+import socket
 import tempfile
 from time import sleep
 from shutil import rmtree
@@ -99,7 +100,8 @@ class Database(object):
             sleep(0.1)
 
     def prestart(self):
-        pass
+        if self.settings['port'] is None:
+            self.settings['port'] = get_unused_port()
 
     def create_default_database(self):
         pass
@@ -157,3 +159,12 @@ class Database(object):
 
     def __exit__(self, *args):
         self.stop()
+
+
+def get_unused_port():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.bind(('localhost', 0))
+    _, port = sock.getsockname()
+    sock.close()
+
+    return port
