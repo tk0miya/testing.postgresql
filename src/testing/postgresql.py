@@ -20,7 +20,7 @@ import subprocess
 from glob import glob
 from contextlib import closing
 
-from testing.common.database import Database
+from testing.common.database import Database, get_path_of
 
 
 __all__ = ['Postgresql', 'skipIfNotFound']
@@ -179,13 +179,3 @@ def find_program(name, subdirs):
                 return path
 
     raise RuntimeError("command not found: %s" % name)
-
-
-def get_path_of(name):
-    path = subprocess.Popen(['/usr/bin/which', name],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE).communicate()[0]
-    if path:
-        return path.rstrip().decode('utf-8')
-    else:
-        return None

@@ -18,6 +18,7 @@ import sys
 import signal
 import socket
 import tempfile
+import subprocess
 from time import sleep
 from shutil import copytree, rmtree
 from datetime import datetime
@@ -197,3 +198,13 @@ def get_unused_port():
     sock.close()
 
     return port
+
+
+def get_path_of(name):
+    path = subprocess.Popen(['/usr/bin/which', name],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE).communicate()[0]
+    if path:
+        return path.rstrip().decode('utf-8')
+    else:
+        return None
