@@ -250,7 +250,7 @@ class TestPostgresql(unittest.TestCase):
         self.assertEqual(False, hasattr(testcase, '__unittest_skip_why__'))
 
     def test_PostgresqlFactory(self):
-        Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True)
+        Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
         with Postgresql() as pgsql1:
             self.assertTrue(pgsql1.copy_data_from)
             copy_data_from1 = pgsql1.copy_data_from
@@ -260,7 +260,7 @@ class TestPostgresql(unittest.TestCase):
         Postgresql.clear_cache()
         self.assertFalse(os.path.exists(copy_data_from1))
 
-    def test_PostgresqlFactory_initdb_handler(self):
+    def test_PostgresqlFactory_with_initialized_handler(self):
         def handler(pgsql):
             conn = pg8000.connect(**pgsql.dsn())
             with closing(conn.cursor()) as cursor:
@@ -269,8 +269,8 @@ class TestPostgresql(unittest.TestCase):
             conn.commit()
             conn.close()
 
-        Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True,
-                                                          initdb_handler=handler)
+        Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True,
+                                                          on_initialized=handler)
         try:
             with Postgresql() as pgsql:
                 conn = pg8000.connect(**pgsql.dsn())

@@ -88,7 +88,7 @@ and it reduces the number of invocation of ``initdb`` command::
   import testing.postgresql
 
   # Generate Postgresql class which shares the generated database
-  Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True)
+  Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
 
 
   def tearDownModule(self):
@@ -104,9 +104,9 @@ and it reduces the number of invocation of ``initdb`` command::
       def tearDown(self):
           self.postgresql.stop()
 
-If you want to insert or create any data and tables as the cached database, use ``initdb_handler`` option::
+If you want to insert fixtures to the cached database, use ``initdb_handler`` option::
 
-  # create initial data on create the database which is cached through testcases
+  # create initial data on create as fixtures into the database
   def handler(postgresql):
       conn = psycopg2.connect(**postgresql.dsn())
       cursor = conn.cursor()
@@ -117,8 +117,8 @@ If you want to insert or create any data and tables as the cached database, use 
       conn.close()
 
   # Use `handler()` on initialize database
-  Postgresql = testing.postgresql.PostgresqlFactory(use_initdb_cache=True,
-                                                    initdb_handler=handler)
+  Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True,
+                                                    on_initialized=handler)
 
 
 Requirements
