@@ -19,9 +19,7 @@ import socket
 import pg8000
 import subprocess
 from glob import glob
-from time import sleep
 from shutil import copytree
-from datetime import datetime
 from contextlib import closing
 
 from testing.common.database import Database
@@ -139,65 +137,26 @@ class Postgresql(Database):
                 self.cleanup()
                 raise RuntimeError("failed to spawn initdb: %s" % exc)
 
-    def start(self):
-        if self.pid:
-            return  # already started
-
+    def prestart(self):
         if self.port is None:
             self.port = get_unused_port()
 
-        logger = open(os.path.join(self.base_dir, 'tmp', 'postgresql.log'), 'wt')
-        pid = os.fork()
-        if pid == 0:
-            os.dup2(logger.fileno(), sys.__stdout__.fileno())
-            os.dup2(logger.fileno(), sys.__stderr__.fileno())
+    def get_server_commandline(self):
+        return ([self.postgres,
+                 '-p', str(self.port),
+                 '-D', os.path.join(self.base_dir, 'data'),
+                 '-k', os.path.join(self.base_dir, 'tmp')] +
+                self.settings['postgres_args'].split())
 
-            try:
-                os.execl(self.postgres, self.postgres,
-                         '-p', str(self.port),
-                         '-D', os.path.join(self.base_dir, 'data'),
-                         '-k', os.path.join(self.base_dir, 'tmp'),
-                         *self.postgres_args.split())
-            except Exception as exc:
-                raise RuntimeError('failed to launch postgres: %r' % exc)
-        else:
-            logger.close()
+    def create_default_database(self):
+        with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
+            conn.autocommit = True
+            with closing(conn.cursor()) as cursor:
+                cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
+                if cursor.fetchone()[0] <= 0:
+                    cursor.execute('CREATE DATABASE test')
 
-            exec_at = datetime.now()
-            while True:
-                if os.waitpid(pid, os.WNOHANG)[0] != 0:
-                    error = RuntimeError("*** failed to launch postgres ***\n" + self.read_log())
-                    self.stop()
-                    raise error
-
-                if self.is_connection_available():
-                    break
-
-                if (datetime.now() - exec_at).seconds > 10.0:
-                    error = RuntimeError("*** failed to launch postgres (timeout) ***\n" + self.read_log())
-                    self.stop()
-                    raise error
-
-                sleep(0.1)
-
-            self.pid = pid
-
-            # create test database
-            with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
-                conn.autocommit = True
-                with closing(conn.cursor()) as cursor:
-                    cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
-                    if cursor.fetchone()[0] <= 0:
-                        cursor.execute('CREATE DATABASE test')
-
-    def read_log(self):
-        try:
-            with open(os.path.join(self.base_dir, 'tmp', 'postgresql.log')) as log:
-                return log.read()
-        except Exception as exc:
-            raise RuntimeError("failed to open file:tmp/postgresql.log: %r" % exc)
-
-    def is_connection_available(self):
+    def is_server_available(self):
         try:
             with closing(pg8000.connect(**self.dsn(database='template1'))):
                 pass

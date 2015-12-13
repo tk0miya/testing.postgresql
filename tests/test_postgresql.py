@@ -33,7 +33,7 @@ class TestPostgresql(unittest.TestCase):
             # connect to postgresql (w/ psycopg2)
             conn = psycopg2.connect(**pgsql.dsn())
             self.assertIsNotNone(conn)
-            self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
+            self.assertRegexpMatches(pgsql.read_bootlog(), 'is ready to accept connections')
             conn.close()
 
             # connect to postgresql (w/ sqlalchemy)
@@ -43,7 +43,7 @@ class TestPostgresql(unittest.TestCase):
             # connect to postgresql (w/ pg8000)
             conn = pg8000.connect(**pgsql.dsn())
             self.assertIsNotNone(conn)
-            self.assertRegexpMatches(pgsql.read_log(), 'is ready to accept connections')
+            self.assertRegexpMatches(pgsql.read_bootlog(), 'is ready to accept connections')
             conn.close()
         finally:
             # shutting down

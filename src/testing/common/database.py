@@ -14,6 +14,7 @@
 #  limitations under the License.
 
 import os
+import sys
 import signal
 import tempfile
 from time import sleep
@@ -25,6 +26,7 @@ class Database(object):
     DEFAULT_SETTINGS = {}
 
     def __init__(self, **kwargs):
+        self.name = self.__class__.__name__
         self.settings = dict(self.DEFAULT_SETTINGS)
         self.settings.update(kwargs)
         self.pid = None
@@ -50,7 +52,60 @@ class Database(object):
         pass
 
     def start(self):
+        if self.pid:
+            return  # already started
+
+        self.prestart()
+
+        logger = open(os.path.join(self.base_dir, '%s.log' % self.name), 'wt')
+        self.pid = os.fork()
+        if self.pid == 0:
+            os.dup2(logger.fileno(), sys.__stdout__.fileno())
+            os.dup2(logger.fileno(), sys.__stderr__.fileno())
+
+            try:
+                command = self.get_server_commandline()
+                os.execl(command[0], *command)
+                self.invoke_server()
+            except Exception as exc:
+                raise RuntimeError('failed to launch %s: %r' % (self.name, exc))
+        else:
+            logger.close()
+
+            try:
+                self.wait_booting()
+                self.create_default_database()
+            except:
+                self.stop()
+                raise
+
+    def get_server_commandline(self):
+        raise NotImplemented
+
+    def wait_booting(self):
+        exec_at = datetime.now()
+        while True:
+            if os.waitpid(self.pid, os.WNOHANG)[0] != 0:
+                raise RuntimeError("*** failed to launch %s ***\n" % self.name +
+                                   self.read_bootlog())
+
+            if self.is_server_available():
+                break
+
+            if (datetime.now() - exec_at).seconds > 10.0:
+                raise RuntimeError("*** failed to launch %s (timeout) ***\n" % self.name +
+                                   self.read_bootlog())
+
+            sleep(0.1)
+
+    def prestart(self):
         pass
+
+    def create_default_database(self):
+        pass
+
+    def is_server_available(self):
+        return False
 
     def stop(self, _signal=signal.SIGINT):
         try:
@@ -71,7 +126,7 @@ class Database(object):
             while (os.waitpid(self.pid, os.WNOHANG)):
                 if (datetime.now() - killed_at).seconds > 10.0:
                     os.kill(self.pid, signal.SIGKILL)
-                    raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_log())
+                    raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_bootlog())
 
                 sleep(0.1)
         except OSError:
@@ -86,6 +141,13 @@ class Database(object):
         if self._use_tmpdir and os.path.exists(self.base_dir):
             rmtree(self.base_dir, ignore_errors=True)
             self._use_tmpdir = False
+
+    def read_bootlog(self):
+        try:
+            with open(os.path.join(self.base_dir, '%s.log' % self.name)) as log:
+                return log.read()
+        except Exception as exc:
+            raise RuntimeError("failed to open file:%s.log: %r" % (self.name, exc))
 
     def __del__(self):
         self.stop()
