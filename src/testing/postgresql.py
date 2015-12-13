@@ -16,13 +16,12 @@
 import os
 import sys
 import socket
-import signal
 import pg8000
 import tempfile
 import subprocess
 from glob import glob
 from time import sleep
-from shutil import copytree, rmtree
+from shutil import copytree
 from datetime import datetime
 from contextlib import closing
 
@@ -208,41 +207,6 @@ class Postgresql(Database):
                     cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
                     if cursor.fetchone()[0] <= 0:
                         cursor.execute('CREATE DATABASE test')
-
-    def stop(self, _signal=signal.SIGINT):
-        try:
-            self.terminate(_signal)
-        finally:
-            self.cleanup()
-
-    def terminate(self, _signal=signal.SIGINT):
-        if self.pid is None:
-            return  # not started
-
-        if self._owner_pid != os.getpid():
-            return  # could not stop in child process
-
-        try:
-            os.kill(self.pid, _signal)
-            killed_at = datetime.now()
-            while (os.waitpid(self.pid, os.WNOHANG)):
-                if (datetime.now() - killed_at).seconds > 10.0:
-                    os.kill(self.pid, signal.SIGKILL)
-                    raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_log())
-
-                sleep(0.1)
-        except OSError:
-            pass
-
-        self.pid = None
-
-    def cleanup(self):
-        if self.pid is not None:
-            return
-
-        if self._use_tmpdir and os.path.exists(self.base_dir):
-            rmtree(self.base_dir, ignore_errors=True)
-            self._use_tmpdir = False
 
     def read_log(self):
         try:

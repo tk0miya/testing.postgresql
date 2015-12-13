@@ -13,7 +13,11 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+import os
 import signal
+from time import sleep
+from shutil import rmtree
+from datetime import datetime
 
 
 class Database(object):
@@ -24,13 +28,39 @@ class Database(object):
         pass
 
     def stop(self, _signal=signal.SIGINT):
-        pass
+        try:
+            self.terminate(_signal)
+        finally:
+            self.cleanup()
 
     def terminate(self, _signal=signal.SIGINT):
-        pass
+        if self.pid is None:
+            return  # not started
+
+        if self._owner_pid != os.getpid():
+            return  # could not stop in child process
+
+        try:
+            os.kill(self.pid, _signal)
+            killed_at = datetime.now()
+            while (os.waitpid(self.pid, os.WNOHANG)):
+                if (datetime.now() - killed_at).seconds > 10.0:
+                    os.kill(self.pid, signal.SIGKILL)
+                    raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_log())
+
+                sleep(0.1)
+        except OSError:
+            pass
+
+        self.pid = None
 
     def cleanup(self):
-        pass
+        if self.pid is not None:
+            return
+
+        if self._use_tmpdir and os.path.exists(self.base_dir):
+            rmtree(self.base_dir, ignore_errors=True)
+            self._use_tmpdir = False
 
     def __del__(self):
         self.stop()
