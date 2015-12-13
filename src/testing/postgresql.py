@@ -159,8 +159,10 @@ class Postgresql(object):
                 p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 output, err = p.communicate()
                 if p.returncode != 0:
+                    self.cleanup()
                     raise RuntimeError("initdb failed: %r" % err)
             except OSError as exc:
+                self.cleanup()
                 raise RuntimeError("failed to spawn initdb: %s" % exc)
 
     def start(self):
@@ -190,13 +192,17 @@ class Postgresql(object):
             exec_at = datetime.now()
             while True:
                 if os.waitpid(pid, os.WNOHANG)[0] != 0:
-                    raise RuntimeError("*** failed to launch postgres ***\n" + self.read_log())
+                    error = RuntimeError("*** failed to launch postgres ***\n" + self.read_log())
+                    self.stop()
+                    raise error
 
                 if self.is_connection_available():
                     break
 
                 if (datetime.now() - exec_at).seconds > 10.0:
-                    raise RuntimeError("*** failed to launch postgres (timeout) ***\n" + self.read_log())
+                    error = RuntimeError("*** failed to launch postgres (timeout) ***\n" + self.read_log())
+                    self.stop()
+                    raise error
 
                 sleep(0.1)
 
@@ -211,8 +217,10 @@ class Postgresql(object):
                         cursor.execute('CREATE DATABASE test')
 
     def stop(self, _signal=signal.SIGINT):
-        self.terminate(_signal)
-        self.cleanup()
+        try:
+            self.terminate(_signal)
+        finally:
+            self.cleanup()
 
     def terminate(self, _signal=signal.SIGINT):
         if self.pid is None:
