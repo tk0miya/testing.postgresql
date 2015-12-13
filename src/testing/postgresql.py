@@ -75,16 +75,11 @@ class Postgresql(Database):
     def initialize(self):
         self.initdb = self.settings.pop('initdb')
         if self.initdb is None:
-            self.settings['initdb'] = find_program('initdb', ['bin'])
+            self.initdb = find_program('initdb', ['bin'])
 
+        self.postgres = self.settings.pop('postgres')
         if self.postgres is None:
-            self.settings['postgres'] = find_program('postgres', ['bin'])
-
-    def __getattr__(self, name):
-        if name in self.settings:
-            return self.settings[name]
-        else:
-            raise AttributeError("'Postgresql' object has no attribute '%s'" % name)
+            self.postgres = find_program('postgres', ['bin'])
 
     def dsn(self, **kwargs):
         # "database=test host=localhost user=postgres"
@@ -106,13 +101,13 @@ class Postgresql(Database):
 
     def setup(self):
         # copy data files
-        if self.copy_data_from:
+        if self.settings['copy_data_from']:
             try:
-                copytree(self.copy_data_from, os.path.join(self.base_dir, 'data'))
+                copytree(self.settings['copy_data_from'], os.path.join(self.base_dir, 'data'))
                 os.chmod(os.path.join(self.base_dir, 'data'), 0o700)
             except Exception as exc:
                 raise RuntimeError("could not copytree %s to %s: %r" %
-                                   (self.copy_data_from, os.path.join(self.base_dir, 'data'), exc))
+                                   (self.settings['copy_data_from'], os.path.join(self.base_dir, 'data'), exc))
 
         # (re)create directory structure
         for subdir in ['data', 'tmp']:
@@ -124,7 +119,7 @@ class Postgresql(Database):
         # initdb
         if not os.path.exists(os.path.join(self.base_dir, 'data', 'PG_VERSION')):
             args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data'), '--lc-messages=C'] +
-                    self.initdb_args.split())
+                    self.settings['initdb_args'].split())
 
             try:
                 p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

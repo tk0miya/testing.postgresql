@@ -34,17 +34,18 @@ class Database(object):
         self._owner_pid = os.getpid()
         self._use_tmpdir = False
 
+        self.base_dir = self.settings.pop('base_dir')
         if self.base_dir:
             if self.base_dir[0] != '/':
-                self.settings['base_dir'] = os.path.join(os.getcwd(), self.base_dir)
+                self.base_dir = os.path.join(os.getcwd(), self.base_dir)
         else:
-            self.settings['base_dir'] = tempfile.mkdtemp()
+            self.base_dir = tempfile.mkdtemp()
             self._use_tmpdir = True
 
         self.initialize()
 
-        if self.auto_start:
-            if self.auto_start >= 2:
+        if self.settings['auto_start']:
+            if self.settings['auto_start'] >= 2:
                 self.setup()
 
             self.start()

@@ -27,7 +27,7 @@ class TestPostgresql(unittest.TestCase):
             params = pgsql.dsn()
             self.assertEqual('test', params['database'])
             self.assertEqual('127.0.0.1', params['host'])
-            self.assertEqual(pgsql.port, params['port'])
+            self.assertEqual(pgsql.settings['port'], params['port'])
             self.assertEqual('postgres', params['user'])
 
             # connect to postgresql (w/ psycopg2)
@@ -252,11 +252,11 @@ class TestPostgresql(unittest.TestCase):
     def test_PostgresqlFactory(self):
         Postgresql = testing.postgresql.PostgresqlFactory(cache_initialized_db=True)
         with Postgresql() as pgsql1:
-            self.assertTrue(pgsql1.copy_data_from)
-            copy_data_from1 = pgsql1.copy_data_from
+            self.assertTrue(pgsql1.settings['copy_data_from'])
+            copy_data_from1 = pgsql1.settings['copy_data_from']
             self.assertTrue(os.path.exists(copy_data_from1))
         with Postgresql() as pgsql2:
-            self.assertEqual(copy_data_from1, pgsql2.copy_data_from)
+            self.assertEqual(copy_data_from1, pgsql2.settings['copy_data_from'])
         Postgresql.clear_cache()
         self.assertFalse(os.path.exists(copy_data_from1))
 
