@@ -26,6 +26,8 @@ from shutil import copytree, rmtree
 from datetime import datetime
 from contextlib import closing
 
+from testing.common.database import Database
+
 
 __all__ = ['Postgresql', 'skipIfNotFound']
 
@@ -73,7 +75,7 @@ class PostgresqlFactory(object):
             self.cache.cleanup()
 
 
-class Postgresql(object):
+class Postgresql(Database):
     def __init__(self, **kwargs):
         self.settings = dict(DEFAULT_SETTINGS)
         self.settings.update(kwargs)
@@ -99,15 +101,6 @@ class Postgresql(object):
                 self.setup()
 
             self.start()
-
-    def __del__(self):
-        self.stop()
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *args):
-        self.stop()
 
     def __getattr__(self, name):
         if name in self.settings:
