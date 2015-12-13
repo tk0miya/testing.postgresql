@@ -19,12 +19,13 @@ import signal
 import socket
 import tempfile
 from time import sleep
-from shutil import rmtree
+from shutil import copytree, rmtree
 from datetime import datetime
 
 
 class Database(object):
     DEFAULT_SETTINGS = {}
+    subdirectories = []
 
     def __init__(self, **kwargs):
         self.name = self.__class__.__name__
@@ -51,6 +52,33 @@ class Database(object):
             self.start()
 
     def setup(self):
+        # copy data files
+        if self.settings['copy_data_from']:
+            try:
+                data_dir = self.get_data_directory()
+                copytree(self.settings['copy_data_from'], data_dir)
+                os.chmod(os.path.join(self.base_dir, 'data'), 0o700)
+            except Exception as exc:
+                raise RuntimeError("could not copytree %s to %s: %r" %
+                                   (self.settings['copy_data_from'], data_dir, exc))
+
+        # create directory tree
+        for subdir in self.subdirectories:
+            path = os.path.join(self.base_dir, subdir)
+            if not os.path.exists(path):
+                os.makedirs(path)
+                os.chmod(path, 0o700)
+
+        try:
+            self.initialize_database()
+        except:
+            self.cleanup()
+            raise
+
+    def get_data_directory(self):
+        pass
+
+    def initialize_database(self):
         pass
 
     def start(self):

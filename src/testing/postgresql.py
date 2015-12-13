@@ -18,7 +18,6 @@ import sys
 import pg8000
 import subprocess
 from glob import glob
-from shutil import copytree
 from contextlib import closing
 
 from testing.common.database import Database
@@ -71,6 +70,7 @@ class Postgresql(Database):
                             pid=None,
                             port=None,
                             copy_data_from=None)
+    subdirectories = ['data', 'tmp']
 
     def initialize(self):
         self.initdb = self.settings.pop('initdb')
@@ -99,24 +99,10 @@ class Postgresql(Database):
 
         return url
 
-    def setup(self):
-        # copy data files
-        if self.settings['copy_data_from']:
-            try:
-                copytree(self.settings['copy_data_from'], os.path.join(self.base_dir, 'data'))
-                os.chmod(os.path.join(self.base_dir, 'data'), 0o700)
-            except Exception as exc:
-                raise RuntimeError("could not copytree %s to %s: %r" %
-                                   (self.settings['copy_data_from'], os.path.join(self.base_dir, 'data'), exc))
+    def get_data_directory(self):
+        return os.path.join(self.base_dir, 'data')
 
-        # (re)create directory structure
-        for subdir in ['data', 'tmp']:
-            path = os.path.join(self.base_dir, subdir)
-            if not os.path.exists(path):
-                os.makedirs(path)
-                os.chmod(path, 0o700)
-
-        # initdb
+    def initialize_database(self):
         if not os.path.exists(os.path.join(self.base_dir, 'data', 'PG_VERSION')):
             args = ([self.initdb, '-D', os.path.join(self.base_dir, 'data'), '--lc-messages=C'] +
                     self.settings['initdb_args'].split())
@@ -125,10 +111,8 @@ class Postgresql(Database):
                 p = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 output, err = p.communicate()
                 if p.returncode != 0:
-                    self.cleanup()
                     raise RuntimeError("initdb failed: %r" % err)
             except OSError as exc:
-                self.cleanup()
                 raise RuntimeError("failed to spawn initdb: %s" % exc)
 
     def get_server_commandline(self):
