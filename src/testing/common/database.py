@@ -15,12 +15,37 @@
 
 import os
 import signal
+import tempfile
 from time import sleep
 from shutil import rmtree
 from datetime import datetime
 
 
 class Database(object):
+    DEFAULT_SETTINGS = {}
+
+    def __init__(self, **kwargs):
+        self.settings = dict(self.DEFAULT_SETTINGS)
+        self.settings.update(kwargs)
+        self.pid = None
+        self._owner_pid = os.getpid()
+        self._use_tmpdir = False
+
+        if self.base_dir:
+            if self.base_dir[0] != '/':
+                self.settings['base_dir'] = os.path.join(os.getcwd(), self.base_dir)
+        else:
+            self.settings['base_dir'] = tempfile.mkdtemp()
+            self._use_tmpdir = True
+
+        self.initialize()
+
+        if self.auto_start:
+            if self.auto_start >= 2:
+                self.setup()
+
+            self.start()
+
     def setup(self):
         pass
 

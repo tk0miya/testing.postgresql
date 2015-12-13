@@ -17,7 +17,6 @@ import os
 import sys
 import socket
 import pg8000
-import tempfile
 import subprocess
 from glob import glob
 from time import sleep
@@ -33,15 +32,6 @@ __all__ = ['Postgresql', 'skipIfNotFound']
 SEARCH_PATHS = (['/usr/local/pgsql', '/usr/local'] +
                 glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
                 glob('/opt/local/lib/postgresql*'))  # for MacPorts
-DEFAULT_SETTINGS = dict(auto_start=2,
-                        base_dir=None,
-                        initdb=None,
-                        initdb_args='-U postgres -A trust',
-                        postgres=None,
-                        postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
-                        pid=None,
-                        port=None,
-                        copy_data_from=None)
 
 
 class PostgresqlFactory(object):
@@ -75,31 +65,23 @@ class PostgresqlFactory(object):
 
 
 class Postgresql(Database):
-    def __init__(self, **kwargs):
-        self.settings = dict(DEFAULT_SETTINGS)
-        self.settings.update(kwargs)
-        self.pid = None
-        self._owner_pid = os.getpid()
-        self._use_tmpdir = False
+    DEFAULT_SETTINGS = dict(auto_start=2,
+                            base_dir=None,
+                            initdb=None,
+                            initdb_args='-U postgres -A trust',
+                            postgres=None,
+                            postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
+                            pid=None,
+                            port=None,
+                            copy_data_from=None)
 
-        if self.base_dir:
-            if self.base_dir[0] != '/':
-                self.settings['base_dir'] = os.path.join(os.getcwd(), self.base_dir)
-        else:
-            self.settings['base_dir'] = tempfile.mkdtemp()
-            self._use_tmpdir = True
-
+    def initialize(self):
+        self.initdb = self.settings.pop('initdb')
         if self.initdb is None:
             self.settings['initdb'] = find_program('initdb', ['bin'])
 
         if self.postgres is None:
             self.settings['postgres'] = find_program('postgres', ['bin'])
-
-        if self.auto_start:
-            if self.auto_start >= 2:
-                self.setup()
-
-            self.start()
 
     def __getattr__(self, name):
         if name in self.settings:
