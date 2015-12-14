@@ -14,13 +14,12 @@
 #  limitations under the License.
 
 import os
-import sys
 import pg8000
 import subprocess
 from glob import glob
 from contextlib import closing
 
-from testing.common.database import Database, get_path_of
+from testing.common.database import Database, get_path_of, SkipIfNotInstalledDecorator
 
 
 __all__ = ['Postgresql', 'skipIfNotFound']
@@ -140,31 +139,14 @@ class Postgresql(Database):
             return True
 
 
-def skipIfNotInstalled(arg=None):
-    if sys.version_info < (2, 7):
-        from unittest2 import skipIf
-    else:
-        from unittest import skipIf
+class PostgresqlSkipIfNotInstalledDecorator(SkipIfNotInstalledDecorator):
+    name = 'PostgreSQL'
 
-    def decorator(fn, path=arg):
-        if path:
-            cond = not os.path.exists(path)
-        else:
-            try:
-                find_program('postgres', ['bin'])  # raise exception if not found
-                cond = False
-            except:
-                cond = True  # not found
-
-        return skipIf(cond, "PostgreSQL not found")(fn)
-
-    if callable(arg):  # execute as simple decorator
-        return decorator(arg, None)
-    else:  # execute with path argument
-        return decorator
+    def search_server(self):
+        find_program('postgres', ['bin'])
 
 
-skipIfNotFound = skipIfNotInstalled
+skipIfNotFound = skipIfNotInstalled = PostgresqlSkipIfNotInstalledDecorator()
 
 
 def find_program(name, subdirs):

@@ -191,6 +191,36 @@ class Database(object):
         self.stop()
 
 
+class SkipIfNotInstalledDecorator(object):
+    name = ''
+
+    def search_server(self):
+        pass  # raise exception if not found
+
+    def __call__(self, arg=None):
+        if sys.version_info < (2, 7):
+            from unittest2 import skipIf
+        else:
+            from unittest import skipIf
+
+        def decorator(fn, path=arg):
+            if path:
+                cond = not os.path.exists(path)
+            else:
+                try:
+                    self.search_server()
+                    cond = False  # found
+                except:
+                    cond = True  # not found
+
+            return skipIf(cond, "%s not found" % self.name)(fn)
+
+        if callable(arg):  # execute as simple decorator
+            return decorator(arg, None)
+        else:  # execute with path argument
+            return decorator
+
+
 def get_unused_port():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     sock.bind(('localhost', 0))
