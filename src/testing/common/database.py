@@ -24,6 +24,38 @@ from shutil import copytree, rmtree
 from datetime import datetime
 
 
+class DatabaseFactory(object):
+    target_class = None
+
+    def __init__(self, **kwargs):
+        self.cache = None
+        self.settings = kwargs
+
+        init_handler = self.settings.pop('on_initialized', None)
+        if self.settings.pop('cache_initialized_db', None):
+            if init_handler:
+                try:
+                    self.cache = self.target_class()
+                    init_handler(self.cache)
+                except:
+                    self.cache.stop()
+                    raise
+                finally:
+                    self.cache.terminate()
+            else:
+                self.cache = self.target_class(auto_start=0)
+                self.cache.setup()
+            self.settings['copy_data_from'] = self.cache.get_data_directory()
+
+    def __call__(self):
+        return self.target_class(**self.settings)
+
+    def clear_cache(self):
+        if self.cache:
+            self.settings['copy_data_from'] = None
+            self.cache.cleanup()
+
+
 class Database(object):
     DEFAULT_SETTINGS = {}
     subdirectories = []

@@ -19,7 +19,9 @@ import subprocess
 from glob import glob
 from contextlib import closing
 
-from testing.common.database import Database, get_path_of, SkipIfNotInstalledDecorator
+from testing.common.database import (
+    Database, DatabaseFactory, get_path_of, SkipIfNotInstalledDecorator
+)
 
 
 __all__ = ['Postgresql', 'skipIfNotFound']
@@ -27,36 +29,6 @@ __all__ = ['Postgresql', 'skipIfNotFound']
 SEARCH_PATHS = (['/usr/local/pgsql', '/usr/local'] +
                 glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
                 glob('/opt/local/lib/postgresql*'))  # for MacPorts
-
-
-class PostgresqlFactory(object):
-    def __init__(self, **kwargs):
-        self.cache = None
-        self.settings = kwargs
-
-        init_handler = self.settings.pop('on_initialized', None)
-        if self.settings.pop('cache_initialized_db', None):
-            if init_handler:
-                try:
-                    self.cache = Postgresql()
-                    init_handler(self.cache)
-                except:
-                    self.cache.stop()
-                    raise
-                finally:
-                    self.cache.terminate()
-            else:
-                self.cache = Postgresql(auto_start=0)
-                self.cache.setup()
-            self.settings['copy_data_from'] = self.cache.base_dir + '/data'
-
-    def __call__(self):
-        return Postgresql(**self.settings)
-
-    def clear_cache(self):
-        if self.cache:
-            self.settings['copy_data_from'] = None
-            self.cache.cleanup()
 
 
 class Postgresql(Database):
@@ -137,6 +109,10 @@ class Postgresql(Database):
             return False
         else:
             return True
+
+
+class PostgresqlFactory(DatabaseFactory):
+    target_class = Postgresql
 
 
 class PostgresqlSkipIfNotInstalledDecorator(SkipIfNotInstalledDecorator):
