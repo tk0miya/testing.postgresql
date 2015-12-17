@@ -15,6 +15,7 @@
 
 import os
 import pg8000
+import signal
 import subprocess
 from glob import glob
 from contextlib import closing
@@ -109,6 +110,10 @@ class Postgresql(Database):
             return False
         else:
             return True
+
+    def terminate(self, *args):
+        # send SIGINT instead of SIGTERM
+        super(Postgresql, self).terminate(signal.SIGINT)
 
 
 class PostgresqlFactory(DatabaseFactory):

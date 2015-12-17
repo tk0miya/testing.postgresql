@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['pg8000 >= 1.10']
+install_requires = ['testing.common.database', 'pg8000 >= 1.10']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
@@ -48,4 +48,5 @@ setup(
         ],
     ),
     test_suite='nose.collector',
+    namespace_packages=['testing'],
 )
