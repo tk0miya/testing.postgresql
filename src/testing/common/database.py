@@ -137,7 +137,7 @@ class Database(object):
 
             try:
                 self.wait_booting()
-                self.create_default_database()
+                self.poststart()
             except:
                 self.stop()
                 raise
@@ -165,7 +165,7 @@ class Database(object):
         if self.settings['port'] is None:
             self.settings['port'] = get_unused_port()
 
-    def create_default_database(self):
+    def poststart(self):
         pass
 
     def is_server_available(self):

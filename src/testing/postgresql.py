@@ -93,7 +93,7 @@ class Postgresql(Database):
                  '-k', os.path.join(self.base_dir, 'tmp')] +
                 self.settings['postgres_args'].split())
 
-    def create_default_database(self):
+    def poststart(self):
         with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
             conn.autocommit = True
             with closing(conn.cursor()) as cursor:
