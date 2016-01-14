@@ -171,13 +171,13 @@ class Database(object):
     def is_server_available(self):
         return False
 
-    def stop(self, _signal=signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT):
+    def stop(self, _signal=signal.CTRL_BREAK_EVENT if os.name == 'nt' else signal.SIGINT):
         try:
             self.terminate(_signal)
         finally:
             self.cleanup()
 
-    def terminate(self, _signal=signal.CTRL_C_EVENT if os.name == 'nt' else signal.SIGINT):
+    def terminate(self, _signal=signal.CTRL_BREAK_EVENT if os.name == 'nt' else signal.SIGINT):
         if self.child is None:
             return  # not started
 
