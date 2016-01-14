@@ -126,28 +126,32 @@ class TestPostgresql(unittest.TestCase):
     def test_fork(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
-            del pgsql
-            pgsql = None
-            os.kill(os.getpid(), signal.SIGTERM)  # exit tests FORCELY
+            try:
+                del pgsql
+                pgsql = None
+            finally:
+                os._exit(0)  # exit tests FORCELY
         else:
             os.wait()
             sleep(1)
-            self.assertTrue(pgsql.pid)
-            os.kill(pgsql.pid, 0)  # process is alive (delete pgsql obj in child does not effect)
+            self.assertTrue(pgsql.child)
+            self.assertIsNone(pgsql.child.poll())  # process is alive (delete pgsql obj in child does not effect)
 
     @unittest.skipIf(os.name == 'nt', 'Windows does not have fork()')
     def test_stop_on_child_process(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
-            pgsql.stop()
-            self.assertTrue(pgsql.pid)
-            os.kill(pgsql.pid, 0)  # process is alive (calling stop() is ignored)
-            os.kill(os.getpid(), signal.SIGTERM)  # exit tests FORCELY
+            try:
+                pgsql.stop()
+                self.assertTrue(pgsql.child)
+                self.assertIsNone(pgsql.child.poll())  # process is alive (calling stop() is ignored)
+            finally:
+                os._exit(0)  # exit tests FORCELY
         else:
             os.wait()
             sleep(1)
-            self.assertTrue(pgsql.pid)
-            os.kill(pgsql.pid, 0)  # process is alive (calling stop() in child is ignored)
+            self.assertTrue(pgsql.child)
+            self.assertIsNone(pgsql.child.poll())  # process is alive (calling stop() in child is ignored)
 
     def test_copy_data_from(self):
         try:
