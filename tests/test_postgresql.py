@@ -47,38 +47,35 @@ class TestPostgresql(unittest.TestCase):
             conn.close()
         finally:
             # shutting down
-            pid = pgsql.pid
-            self.assertTrue(pid)
-            os.kill(pid, 0)  # process is alive
+            child = pgsql.child
+            self.assertIsNotNone(child)
+            self.assertIsNone(child.poll())  # process is alive
 
             pgsql.stop()
             sleep(1)
 
-            self.assertIsNone(pgsql.pid)
-            with self.assertRaises(OSError):
-                os.kill(pid, 0)  # process is down
+            self.assertIsNone(pgsql.child)
+            self.assertIsNotNone(child.poll())  # process is down
 
     def test_stop(self):
         # start postgresql server
         pgsql = testing.postgresql.Postgresql()
-        self.assertIsNotNone(pgsql.pid)
+        self.assertIsNotNone(pgsql.child)
         self.assertTrue(os.path.exists(pgsql.base_dir))
-        pid = pgsql.pid
-        os.kill(pid, 0)  # process is alive
+        child = pgsql.child
+        self.assertIsNone(child.poll())  # process is alive
 
         # call stop()
         pgsql.stop()
-        self.assertIsNone(pgsql.pid)
+        self.assertIsNone(pgsql.child)
         self.assertFalse(os.path.exists(pgsql.base_dir))
-        with self.assertRaises(OSError):
-            os.kill(pid, 0)  # process is down
+        self.assertIsNotNone(child.poll())  # process down
 
         # call stop() again
         pgsql.stop()
-        self.assertIsNone(pgsql.pid)
+        self.assertIsNone(pgsql.child)
         self.assertFalse(os.path.exists(pgsql.base_dir))
-        with self.assertRaises(OSError):
-            os.kill(pid, 0)  # process is down
+        self.assertIsNotNone(child.poll())  # process down
 
         # delete postgresql object after stop()
         del pgsql
@@ -98,20 +95,19 @@ class TestPostgresql(unittest.TestCase):
             self.assertIsNotNone(conn)
             conn.close()
 
-            pid = pgsql.pid
-            os.kill(pid, 0)  # process is alive
+            child = pgsql.child
+            self.assertIsNone(child.poll())  # process is alive
 
-        self.assertIsNone(pgsql.pid)
-        with self.assertRaises(OSError):
-            os.kill(pid, 0)  # process is down
+        self.assertIsNone(pgsql.child)
+        self.assertIsNotNone(child.poll())  # process is down
 
     def test_multiple_postgresql(self):
         pgsql1 = testing.postgresql.Postgresql()
         pgsql2 = testing.postgresql.Postgresql()
-        self.assertNotEqual(pgsql1.pid, pgsql2.pid)
+        self.assertNotEqual(pgsql1.child, pgsql2.child)
 
-        os.kill(pgsql1.pid, 0)  # process is alive
-        os.kill(pgsql2.pid, 0)  # process is alive
+        self.assertIsNone(pgsql1.child.poll())  # process is alive
+        self.assertIsNone(pgsql2.child.poll())  # process is alive
 
     def test_postgresql_is_not_found(self):
         try:
