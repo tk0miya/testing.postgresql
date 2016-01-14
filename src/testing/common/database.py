@@ -64,7 +64,7 @@ class Database(object):
         self.name = self.__class__.__name__
         self.settings = dict(self.DEFAULT_SETTINGS)
         self.settings.update(kwargs)
-        self.pid = None
+        self.child = None
         self._owner_pid = os.getpid()
         self._use_tmpdir = False
 
@@ -115,32 +115,32 @@ class Database(object):
         pass
 
     def start(self):
-        if self.pid:
+        if self.child:
             return  # already started
 
         self.prestart()
 
         logger = open(os.path.join(self.base_dir, '%s.log' % self.name), 'wt')
-        self.pid = os.fork()
-        if self.pid == 0:
-            os.dup2(logger.fileno(), sys.__stdout__.fileno())
-            os.dup2(logger.fileno(), sys.__stderr__.fileno())
-
-            try:
-                command = self.get_server_commandline()
-                os.execl(command[0], *command)
-                self.invoke_server()
-            except Exception as exc:
-                raise RuntimeError('failed to launch %s: %r' % (self.name, exc))
+        try:
+            command = self.get_server_commandline()
+            flags = 0
+            if os.name == 'nt':
+                flags |= subprocess.CREATE_NEW_PROCESS_GROUP
+            self.child = subprocess.Popen(command,
+                                          stdout=logger,
+                                          stderr=logger,
+                                          creationflags=flags)
+        except Exception as exc:
+            raise RuntimeError('failed to launch %s: %r' % (self.name, exc))
         else:
-            logger.close()
-
             try:
                 self.wait_booting()
                 self.create_default_database()
             except:
                 self.stop()
                 raise
+        finally:
+            logger.close()
 
     def get_server_commandline(self):
         raise NotImplemented
@@ -148,7 +148,7 @@ class Database(object):
     def wait_booting(self):
         exec_at = datetime.now()
         while True:
-            if os.waitpid(self.pid, os.WNOHANG)[0] != 0:
+            if self.child.poll() is not None:
                 raise RuntimeError("*** failed to launch %s ***\n" % self.name +
                                    self.read_bootlog())
 
@@ -171,35 +171,35 @@ class Database(object):
     def is_server_available(self):
         return False
 
-    def stop(self, _signal=signal.SIGINT):
+    def stop(self, _signal=signal.CTRL_BREAK_EVENT if os.name == 'nt' else signal.SIGINT):
         try:
             self.terminate(_signal)
         finally:
             self.cleanup()
 
-    def terminate(self, _signal=signal.SIGINT):
-        if self.pid is None:
+    def terminate(self, _signal=signal.CTRL_BREAK_EVENT if os.name == 'nt' else signal.SIGINT):
+        if self.child is None:
             return  # not started
 
         if self._owner_pid != os.getpid():
             return  # could not stop in child process
 
         try:
-            os.kill(self.pid, _signal)
+            self.child.send_signal(_signal)
             killed_at = datetime.now()
-            while (os.waitpid(self.pid, os.WNOHANG)):
+            while self.child.poll() is None:
                 if (datetime.now() - killed_at).seconds > 10.0:
-                    os.kill(self.pid, signal.SIGKILL)
+                    self.child.kill()
                     raise RuntimeError("*** failed to shutdown postgres (timeout) ***\n" + self.read_bootlog())
 
                 sleep(0.1)
         except OSError:
             pass
 
-        self.pid = None
+        self.child = None
 
     def cleanup(self):
-        if self.pid is not None:
+        if self.child is not None:
             return
 
         if self._use_tmpdir and os.path.exists(self.base_dir):
@@ -263,7 +263,8 @@ def get_unused_port():
 
 
 def get_path_of(name):
-    path = subprocess.Popen(['/usr/bin/which', name],
+    which = 'where' if os.name == 'nt' else '/usr/bin/which'
+    path = subprocess.Popen([which, name],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE).communicate()[0]
     if path:
