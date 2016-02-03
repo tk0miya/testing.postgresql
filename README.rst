@@ -134,6 +134,11 @@ Apache License 2.0
 History
 =======
 
+1.3.0 (2016-02-03)
+-------------------
+* Add testing.postgresql.PostgresqlFactory
+* Depend on ``testing.common.database`` package
+
 1.2.1 (2015-08-22)
 -------------------
 * Fix bug:
