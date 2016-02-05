@@ -43,6 +43,7 @@ class Postgresql(Database):
                             port=None,
                             copy_data_from=None)
     subdirectories = ['data', 'tmp']
+    terminate_signal = signal.SIGINT
 
     def initialize(self):
         self.initdb = self.settings.pop('initdb')
@@ -110,10 +111,6 @@ class Postgresql(Database):
             return False
         else:
             return True
-
-    def terminate(self, *args):
-        # send SIGINT instead of SIGTERM
-        super(Postgresql, self).terminate(signal.SIGINT)
 
 
 class PostgresqlFactory(DatabaseFactory):
