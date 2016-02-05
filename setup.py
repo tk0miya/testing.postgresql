@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
 ]
 
-install_requires = ['testing.common.database', 'pg8000 >= 1.10']
+install_requires = ['testing.common.database >= 1.1.0', 'pg8000 >= 1.10']
 if sys.version_info < (2, 7):
     install_requires.append('unittest2')
 
