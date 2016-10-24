@@ -113,7 +113,7 @@ class Postgresql(Database):
 
     def terminate(self, *args):
         # send SIGINT instead of SIGTERM
-        super(Postgresql, self).terminate(signal.SIGINT)
+        super(Postgresql, self).terminate(signal.SIGINT if os.name != 'nt' else None)
 
 
 class PostgresqlFactory(DatabaseFactory):
