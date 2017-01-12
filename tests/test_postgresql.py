@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import signal
 import tempfile
+import unittest
 import testing.postgresql
 from time import sleep
 from shutil import rmtree
@@ -11,11 +11,6 @@ import pg8000
 import psycopg2
 import sqlalchemy
 from contextlib import closing
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 
 class TestPostgresql(unittest.TestCase):
