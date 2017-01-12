@@ -123,7 +123,7 @@ If you want to insert fixtures to the cached database, use ``initdb_handler`` op
 
 Requirements
 ============
-* Python 2.6, 2.7, 3.2, 3.3, 3.4, 3.5
+* Python 2.7, 3.4, 3.5, 3.6
 * pg8000 1.10
 
 License
