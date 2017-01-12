@@ -39,6 +39,7 @@ class Postgresql(Database):
                             initdb_args='-U postgres -A trust',
                             postgres=None,
                             postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
+                            postgres_version=None,
                             db_name='test',
                             pid=None,
                             port=None,
@@ -48,11 +49,11 @@ class Postgresql(Database):
     def initialize(self):
         self.initdb = self.settings.pop('initdb')
         if self.initdb is None:
-            self.initdb = find_program('initdb', ['bin'])
+            self.initdb = find_program('initdb', ['bin'], self.settings['postgres_version'])
 
         self.postgres = self.settings.pop('postgres')
         if self.postgres is None:
-            self.postgres = find_program('postgres', ['bin'])
+            self.postgres = find_program('postgres', ['bin'], self.settings['postgres_version'])
 
     def dsn(self, **kwargs):
         # "database=test host=localhost user=postgres"
@@ -131,15 +132,17 @@ class PostgresqlSkipIfNotInstalledDecorator(SkipIfNotInstalledDecorator):
 skipIfNotFound = skipIfNotInstalled = PostgresqlSkipIfNotInstalledDecorator()
 
 
-def find_program(name, subdirs):
+def find_program(name, subdirs, version=None):
     path = get_path_of(name)
     if path:
-        return path
+        if not version or version in path:
+            return path
 
     for base_dir in SEARCH_PATHS:
         for subdir in subdirs:
             path = os.path.join(base_dir, subdir, name)
             if os.path.exists(path):
-                return path
+                if not version or version in path:
+                    return path
 
     raise RuntimeError("command not found: %s" % name)
