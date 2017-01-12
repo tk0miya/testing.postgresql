@@ -39,6 +39,7 @@ class Postgresql(Database):
                             initdb_args='-U postgres -A trust',
                             postgres=None,
                             postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
+                            db_name='test',
                             pid=None,
                             port=None,
                             copy_data_from=None)
@@ -59,7 +60,7 @@ class Postgresql(Database):
         params.setdefault('port', self.settings['port'])
         params.setdefault('host', '127.0.0.1')
         params.setdefault('user', 'postgres')
-        params.setdefault('database', 'test')
+        params.setdefault('database', self.settings['db_name'])
 
         return params
 
@@ -98,9 +99,9 @@ class Postgresql(Database):
         with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
             conn.autocommit = True
             with closing(conn.cursor()) as cursor:
-                cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
+                cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='{}'".format(self.settings['db_name']))
                 if cursor.fetchone()[0] <= 0:
-                    cursor.execute('CREATE DATABASE test')
+                    cursor.execute('CREATE DATABASE {}'.format(self.settings['db_name']))
 
     def is_server_available(self):
         try:
