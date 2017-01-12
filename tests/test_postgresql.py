@@ -111,6 +111,7 @@ class TestPostgresql(unittest.TestCase):
             testing.postgresql.SEARCH_PATHS = search_paths
             os.environ['PATH'] = path_env
 
+    @unittest.skipIf(os.name == 'nt', 'Windows does not have fork()')
     def test_fork(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
@@ -122,6 +123,7 @@ class TestPostgresql(unittest.TestCase):
             sleep(1)
             self.assertTrue(pgsql.is_alive())  # process is alive (delete pgsql obj in child does not effect)
 
+    @unittest.skipIf(os.name == 'nt', 'Windows does not have fork()')
     def test_stop_on_child_process(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
