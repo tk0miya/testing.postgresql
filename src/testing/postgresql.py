@@ -28,6 +28,7 @@ from testing.common.database import (
 __all__ = ['Postgresql', 'skipIfNotFound']
 
 SEARCH_PATHS = (['/usr/local/pgsql', '/usr/local'] +
+                glob('/usr/pgsql-*') +  # for CentOS/RHEL
                 glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
                 glob('/opt/local/lib/postgresql*'))  # for MacPorts
 
@@ -115,7 +116,7 @@ class Postgresql(Database):
 
     def terminate(self, *args):
         # send SIGINT instead of SIGTERM
-        super(Postgresql, self).terminate(signal.SIGINT)
+        super(Postgresql, self).terminate(signal.SIGINT if os.name != 'nt' else None)
 
 
 class PostgresqlFactory(DatabaseFactory):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import sys
 import signal
 import tempfile
+import unittest
 import testing.postgresql
 from time import sleep
 from shutil import rmtree
@@ -11,11 +11,6 @@ import pg8000
 import psycopg2
 import sqlalchemy
 from contextlib import closing
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
 
 
 class TestPostgresql(unittest.TestCase):
@@ -116,6 +111,7 @@ class TestPostgresql(unittest.TestCase):
             testing.postgresql.SEARCH_PATHS = search_paths
             os.environ['PATH'] = path_env
 
+    @unittest.skipIf(os.name == 'nt', 'Windows does not have fork()')
     def test_fork(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
@@ -127,6 +123,7 @@ class TestPostgresql(unittest.TestCase):
             sleep(1)
             self.assertTrue(pgsql.is_alive())  # process is alive (delete pgsql obj in child does not effect)
 
+    @unittest.skipIf(os.name == 'nt', 'Windows does not have fork()')
     def test_stop_on_child_process(self):
         pgsql = testing.postgresql.Postgresql()
         if os.fork() == 0:
