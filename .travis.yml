@@ -1,13 +1,17 @@
 language: python
-python: 3.5
+python: 3.6
 env:
   matrix:
     - TOXENV=py27
     - TOXENV=py34
     - TOXENV=py35
+    - TOXENV=py36
     - TOXENV=coverage
 cache:
   directories:
     - $HOME/.cache/pip
+before_install:
+  # work around https://github.com/travis-ci/travis-ci/issues/8363
+  - pyenv global system 3.5
 install: pip install docutils tox
 script: tox
