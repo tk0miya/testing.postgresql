@@ -42,6 +42,7 @@ class Postgresql(Database):
                             postgres_args='-h 127.0.0.1 -F -c logging_collector=off',
                             pid=None,
                             port=None,
+                            database='test',
                             copy_data_from=None)
     subdirectories = ['data', 'tmp']
 
@@ -60,7 +61,7 @@ class Postgresql(Database):
         params.setdefault('port', self.settings['port'])
         params.setdefault('host', '127.0.0.1')
         params.setdefault('user', 'postgres')
-        params.setdefault('database', 'test')
+        params.setdefault('database', self.settings['database'])
 
         return params
 
@@ -91,6 +92,7 @@ class Postgresql(Database):
     def get_server_commandline(self):
         return ([self.postgres,
                  '-p', str(self.settings['port']),
+                 '-d', str(self.settings['database']),
                  '-D', os.path.join(self.base_dir, 'data'),
                  '-k', os.path.join(self.base_dir, 'tmp')] +
                 self.settings['postgres_args'].split())
@@ -99,9 +101,9 @@ class Postgresql(Database):
         with closing(pg8000.connect(**self.dsn(database='postgres'))) as conn:
             conn.autocommit = True
             with closing(conn.cursor()) as cursor:
-                cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='test'")
+                cursor.execute("SELECT COUNT(*) FROM pg_database WHERE datname='%s'" % self.settings['database'])
                 if cursor.fetchone()[0] <= 0:
-                    cursor.execute('CREATE DATABASE test')
+                    cursor.execute('CREATE DATABASE %s' % self.settings['database'])
 
     def is_server_available(self):
         try:

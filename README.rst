@@ -134,6 +134,10 @@ Apache License 2.0
 History
 =======
 
+1.3.1 (2016-02-03)
+-------------------
+* Add support to custom database name instead of only 'test'
+
 1.3.0 (2016-02-03)
 -------------------
 * Add testing.postgresql.PostgresqlFactory
