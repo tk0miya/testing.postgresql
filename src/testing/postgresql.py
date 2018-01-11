@@ -19,18 +19,36 @@ import signal
 import subprocess
 from glob import glob
 from contextlib import closing
+from distutils.version import LooseVersion
 
 from testing.common.database import (
     Database, DatabaseFactory, get_path_of, SkipIfNotInstalledDecorator
 )
 
-
 __all__ = ['Postgresql', 'skipIfNotFound']
 
+
+def sorted_paths(glob_pattern):
+    """
+    Try to return search paths sorted by version number
+    (latest version first)
+
+    """
+    values = glob(glob_pattern)
+    try:
+        idx = glob_pattern.index('*')
+
+        # -> [('9.4', '/usr/lib/postgresql/9.4')]
+        matches = [(LooseVersion(match[idx:]), match) for match in values]
+
+        return [path for _, path in sorted(matches, reverse=True)]
+    except Exception:
+        return values
+
 SEARCH_PATHS = (['/usr/local/pgsql', '/usr/local'] +
-                glob('/usr/pgsql-*') +  # for CentOS/RHEL
-                glob('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
-                glob('/opt/local/lib/postgresql*'))  # for MacPorts
+                sorted_paths('/usr/pgsql-*') +  # for CentOS/RHEL
+                sorted_paths('/usr/lib/postgresql/*') +  # for Debian/Ubuntu
+                sorted_paths('/opt/local/lib/postgresql*'))  # for MacPorts
 
 
 class Postgresql(Database):
