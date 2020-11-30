@@ -35,7 +35,7 @@ Create PostgreSQL instance using ``testing.postgresql.Postgresql``::
   import testing.postgresql
   from sqlalchemy import create_engine
 
-  # Lanuch new PostgreSQL server
+  # Launch new PostgreSQL server
   with testing.postgresql.Postgresql() as postgresql:
       # connect to PostgreSQL
       engine = create_engine(postgresql.url())
